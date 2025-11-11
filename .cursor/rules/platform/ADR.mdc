@@ -1,0 +1,247 @@
+---
+description: Platform Architectural Decision Records
+globs:
+alwaysApply: false
+---
+
+# Architecture Decision Log - Platform
+
+<!--
+ADR_AGENT_PROTOCOL v1.0
+
+You (the agent) manage this file as the single source of truth for all platform ADRs.
+
+NUMBER RANGE CONVENTION
+- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/platform/ADR.mdc)
+- Frontend ADRs: ADR-1000 to ADR-1999 (.cursor/rules/frontend/ADR.mdc)
+- Backend Infrastructure: ADR-2000 to ADR-2049 (.cursor/rules/backend/ADR.mdc)
+- Backend Grant Prototype: ADR-2050 to ADR-2099 (.cursor/rules/backend/grant-prototype/ADR.mdc)
+- Backend Grant ADK: ADR-2100 to ADR-2499 (.cursor/rules/backend/ADR.mdc)
+
+INVARIANTS
+- Keep this exact file structure and headings.
+- All ADR entries use H2 headings: "## ADR-XXXX — <Title>" (4-digit zero-padded ID).
+- Platform ADRs MUST use numbers 0001-0999 only.
+- Allowed Status values: Proposed | Accepted | Superseded
+- Date format: YYYY-MM-DD
+- New entries must be appended to the END of the file.
+- The Index table between the INDEX markers must always reflect the latest state and be sorted by ID desc (newest on top).
+- Each ADR MUST contain: Date, Status, Owner, Context, Decision, Consequences.
+- Each ADR must include an explicit anchor `<a id="adr-XXXX"></a>` so links remain stable.
+
+HOW TO ADD A NEW ADR
+1) Read the whole file.
+2) Compute next ID:
+   - Scan for headings matching: ^## ADR-(\d{4}) — .+$
+   - next_id = (max captured number) + 1, left-pad to 4 digits.
+3) Create a new ADR section using the "New ADR Entry Template" below.
+   - Place it AFTER the last ADR section in the file.
+   - Add an `<a id="adr-XXXX"></a>` line immediately below the heading.
+4) Update the Index (between the INDEX markers):
+   - Insert/replace the row for this ADR keeping the table sorted by ID descending.
+   - Title in the Index MUST link to the anchor: [<Title>](#adr-XXXX)
+   - If this ADR supersedes another: set "Supersedes" in this row, and update that older ADR:
+       a) Change its Status to "Superseded"
+       b) Add "Superseded by: ADR-XXXX" in its Consequences block
+       c) Update the older ADR's Index row "Superseded by" column to ADR-XXXX
+5) Validate before saving:
+   - Exactly one heading exists for ADR-XXXX
+   - All required fields are present and non-empty
+   - Index contains a row for ADR-XXXX and remains properly sorted
+6) Concurrency resolution:
+   - If a merge conflict or duplicate ID is detected after reading: recompute next_id from the current file state, rename your heading, anchor, and Index row accordingly, and retry once.
+
+COMMIT MESSAGE SUGGESTION
+- "ADR-XXXX: <Short Title> — <Status>"
+
+END ADR_AGENT_PROTOCOL
+-->
+
+## Index
+
+<!-- BEGIN:ADR_INDEX -->
+
+| ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
+| ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
+| 0002 | [Gemini File Search for Vector Storage](#adr-0002)        | 2025-11-11 | Accepted | —          | —             |
+| 0001 | [Monorepo Structure Decision](#adr-0001)                  | 2025-11-11 | Accepted | —          | —             |
+
+<!-- END:ADR_INDEX -->
+
+---
+
+## New ADR Entry Template (copy for each new decision)
+
+> Replace placeholders, keep section headers. Keep prose concise.
+
+```
+
+## ADR-XXXX — <Short, specific title>
+
+<a id="adr-XXXX"></a>
+**Date**: YYYY-MM-DD
+**Status**: Proposed | Accepted | Superseded
+**Owner**: <Name>
+
+### Context
+
+<1–3 sentences: what changed or what forces drive this decision now>
+
+### Alternatives
+
+<Quick bullet list of alternatives considered, and why they were rejected.>
+
+### Decision
+
+<Single clear decision in active voice; make it testable/verifiable>
+
+### Consequences
+
+* **Pros**: <benefit 1>, <benefit 2>
+* **Cons / risks**: <cost 1>, <risk 1>
+* **Supersedes**: ADR-NNNN (if any)
+* **Superseded by**: ADR-MMMM (filled later if replaced)
+
+### (Optional) Compliance / Verification
+
+<How we'll check this is honored: tests, checks, fitness functions, runbooks>
+
+```
+
+---
+
+## ADR-0001 — Monorepo Structure Decision
+
+<a id="adr-0001"></a>
+**Date**: 2025-11-11
+**Status**: Accepted
+**Owner**: Initial Project Setup
+
+### Context
+
+Grant-Harness is being rebuilt from scratch (v2.0) after initial prototype. The project will evolve through multiple phases: Python prototype (Phase 1), production ADK agents (Phase 2), and scaled deployment (Phase 3). A decision is needed on how to organize the repository to support this phased development while maintaining clear boundaries between components.
+
+### Alternatives
+
+- **Separate repositories**: Independent repos for prototype, backend ADK, frontend
+  - Pros: Complete isolation, independent versioning
+  - Cons: Code duplication, complex development workflow, difficult cross-component changes
+- **Flat structure**: Single directory with all code mixed together
+  - Pros: Simple navigation
+  - Cons: No clear boundaries, hard to isolate Phase 1 vs Phase 2 code, deployment complexity
+- **Monorepo with clear separation**: Organized by phase and component type (chosen)
+  - Pros: Single git history, shared documentation, clear boundaries, phased development support
+  - Cons: Slightly more complex navigation
+
+### Decision
+
+Implement **monorepo structure** with clear separation by component type and phase:
+
+```
+grant-harness/
+├── .cursor/rules/          # AI agent documentation
+│   ├── platform/           # Platform ADRs (0001-0999)
+│   ├── backend/            # Backend infrastructure ADRs (2000-2049)
+│   │   └── grant-prototype/ # Prototype tactical ADRs (2050-2099)
+│   └── frontend/           # Frontend ADRs (1000-1999)
+├── .claude/commands/       # Claude slash commands
+├── docs/                   # Specifications and research
+│   ├── specs/              # Project specifications
+│   ├── research/           # Grant sources research
+│   ├── architecture/       # Architecture diagrams
+│   └── context/            # Test data and samples
+├── back/                   # Backend components
+│   ├── grant-prototype/    # Phase 1: Python prototype
+│   └── grant-adk/          # Phase 2: Production ADK agents
+└── front/                  # Frontend components
+    └── grant-portal/       # Phase 2: Next.js frontend
+```
+
+Each component has independent `pyproject.toml`, `.env`, and deployment scripts.
+
+### Consequences
+
+* **Pros**: Clear phase separation (prototype vs production), single git repository for coordination, shared documentation in docs/, independent dependency management per component, clean migration path from prototype to ADK, follows emew-agents pattern (proven structure)
+* **Cons / risks**: Slightly more complex repo navigation, need to manage multiple virtual environments, risk of confusion between prototype and ADK directories
+* **Supersedes**: —
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `.cursor/rules/folder-structure.mdc` - Complete directory structure documentation
+- `CLAUDE.md` - Main navigation guide referencing this structure
+- `back/grant-prototype/pyproject.toml` - Prototype dependencies (to be created)
+- `back/grant-adk/` - ADK agent directory (Phase 2)
+
+**AI Agent Guidance**: Always navigate to specific component directory before coding. Use `cd back/grant-prototype` for Phase 1 work. Use `cd back/grant-adk` for Phase 2 work. Each component has its own virtual environment (`.venv/`). Read appropriate ADR.mdc file for component-specific decisions.
+
+---
+
+## ADR-0002 — Gemini File Search for Vector Storage
+
+<a id="adr-0002"></a>
+**Date**: 2025-11-11
+**Status**: Accepted
+**Owner**: Initial Project Setup
+
+### Context
+
+Grant-Harness requires semantic search capabilities to match companies with relevant grants from a corpus of 50+ government grant documents. The system needs to:
+- Store and index grant documents for semantic search
+- Perform vector similarity matching
+- Return relevant grants with citations
+- Handle 100+ grants initially, scaling to 1000+
+
+A decision is needed on vector storage and retrieval infrastructure.
+
+### Alternatives
+
+- **Self-hosted vector database** (Weaviate, Pinecone, Chroma):
+  - Pros: Full control, customizable, works with any LLM
+  - Cons: Infrastructure setup/maintenance required, embedding costs ($0.0001/1K tokens), vector storage costs, latency management, complex deployment
+- **Vertex AI Vector Search**:
+  - Pros: Google Cloud native, scalable
+  - Cons: Setup complexity, costs similar to self-hosted, requires manual embedding pipeline
+- **Gemini File Search** (Vertex AI RAG Engine):
+  - Pros: Managed service (zero infrastructure), built-in document processing and embeddings, integrated citations, 99% cost reduction vs self-hosted, rapid MVP development
+  - Cons: Vendor lock-in to Google, less customization, corpus size limits
+
+### Decision
+
+Use **Gemini File Search** (Vertex AI RAG Engine) as the exclusive vector storage and retrieval system for Grant-Harness.
+
+**Implementation**:
+- Upload grant documents (PDFs, HTML, JSON) to Gemini File API
+- Organize in RAG corpus with metadata (jurisdiction, sector, funding range)
+- Use `VertexAiRagRetrieval` tool in ADK agents for semantic search
+- Store corpus metadata in `docs/context/grants/gemini-file-index.json`
+
+**Configuration**:
+```env
+GOOGLE_GENAI_USE_VERTEXAI=1
+GOOGLE_CLOUD_PROJECT=your_project_id
+GOOGLE_CLOUD_LOCATION=us-east4
+RAG_CORPUS=projects/{project}/locations/{location}/ragCorpora/{corpus_id}
+```
+
+### Consequences
+
+* **Pros**: Zero infrastructure setup/maintenance, built-in embeddings (no tokenization costs), automatic document chunking and indexing, integrated citations (critical for grant matching), 99% cost reduction compared to self-hosted, faster MVP iteration (focus on matching logic, not infrastructure), Google Cloud alignment (same as Vertex AI deployment target)
+* **Cons / risks**: Vendor lock-in to Google Cloud, less customization control (can't tune chunking strategy), corpus size limits (need to monitor), potential migration effort if switching away from Gemini in future
+* **Supersedes**: —
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `back/grant-prototype/gemini_store/file_manager.py` - File upload management (to be created)
+- `back/grant-prototype/gemini_store/corpus_builder.py` - Corpus organization (to be created)
+- `back/grant-prototype/gemini_store/query_engine.py` - Semantic search queries (to be created)
+- `docs/context/grants/gemini-file-index.json` - Corpus metadata tracking (to be created)
+
+**Cost Analysis**:
+- Self-hosted: ~$50-100/month (vector DB + embeddings + compute)
+- Gemini File Search: ~$1-5/month (managed service, included embeddings)
+
+**AI Agent Guidance**: Always use Gemini File API for grant storage. Upload documents via `file_manager.py`. Query using semantic search through `query_engine.py`. Track all uploaded files in `gemini-file-index.json` with metadata. Use citations in all grant match responses. For prototype (Phase 1), use Gemini API key. For production (Phase 2), use Vertex AI with service account.

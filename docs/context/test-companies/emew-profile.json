@@ -1,0 +1,37 @@
+{
+  "id": "emew-001",
+  "name": "EMEW Corporation",
+  "industry": "Recycling & Metal Recovery",
+  "description": "EMEW specializes in electrochemical metal recovery technology, providing sustainable solutions for mining waste, e-waste, and industrial effluent treatment. Our technology recovers copper, zinc, nickel, and other valuable metals from low-concentration solutions using proprietary electrowinning processes. We serve mining companies, electronics recyclers, and industrial manufacturers looking to recover valuable materials from waste streams.",
+  "website": "https://www.emew.com",
+  "state": "VIC",
+  "annual_revenue": 5000000,
+  "employee_count": 25,
+  "sectors": ["recycling", "manufacturing"],
+  "established": 2001,
+  "certifications": ["ISO 9001", "ISO 14001"],
+  "looking_for": [
+    "R&D funding for new recovery processes",
+    "Capital grants for equipment upgrades",
+    "Export market development support",
+    "Circular economy initiatives",
+    "Innovation and technology commercialization funding"
+  ],
+  "recent_projects": [
+    "Copper recovery from mining waste streams",
+    "E-waste precious metal recovery pilot",
+    "Industrial effluent treatment for zinc recovery"
+  ],
+  "target_markets": [
+    "Mining and minerals processing",
+    "Electronics recycling",
+    "Industrial manufacturing",
+    "Chemical processing"
+  ],
+  "competitive_advantages": [
+    "Proprietary electrowinning technology",
+    "20+ years of industry experience",
+    "Proven track record with major mining companies",
+    "Sustainable and environmentally-friendly processes"
+  ]
+}

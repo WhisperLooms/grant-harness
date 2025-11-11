@@ -1,0 +1,52 @@
+{
+  "id": "ai-001",
+  "name": "AI Solutions Queensland",
+  "industry": "Artificial Intelligence Consulting",
+  "description": "AI consulting firm helping manufacturers implement predictive maintenance, quality control, and supply chain optimization using machine learning. We specialize in Industry 4.0 transformations for small and medium manufacturing companies, making advanced AI accessible and affordable. Our solutions integrate with existing manufacturing systems and provide clear ROI within 6-12 months.",
+  "website": "https://example.com/aisolutions",
+  "state": "QLD",
+  "annual_revenue": 1200000,
+  "employee_count": 15,
+  "sectors": ["ai", "manufacturing"],
+  "established": 2020,
+  "certifications": ["ISO 27001"],
+  "looking_for": [
+    "AI adoption program grants",
+    "Collaborative R&D with universities",
+    "Technology commercialization funding",
+    "Manufacturing innovation grants",
+    "Digital transformation support"
+  ],
+  "recent_projects": [
+    "Predictive maintenance system for food processing plant (reduced downtime by 40%)",
+    "Computer vision quality control for automotive parts manufacturer",
+    "Supply chain optimization for consumer goods distributor",
+    "Energy consumption optimization for industrial facility"
+  ],
+  "target_markets": [
+    "Food and beverage manufacturing",
+    "Automotive and transport equipment",
+    "Consumer goods manufacturing",
+    "Industrial equipment and machinery"
+  ],
+  "services": [
+    "AI strategy consulting",
+    "Predictive maintenance solutions",
+    "Computer vision for quality control",
+    "Supply chain optimization",
+    "Energy management systems",
+    "Staff training and change management"
+  ],
+  "competitive_advantages": [
+    "Focus on SME manufacturers (not enterprise-only)",
+    "Proven ROI within 6-12 months",
+    "Integration with legacy systems",
+    "Ongoing support and maintenance",
+    "Local Queensland presence with manufacturing expertise"
+  ],
+  "partnerships": [
+    "University of Queensland (AI research collaboration)",
+    "QUT (Industry 4.0 program)",
+    "Manufacturing Skills Queensland (training programs)"
+  ]
+}

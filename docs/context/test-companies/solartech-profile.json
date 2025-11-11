@@ -1,0 +1,47 @@
+{
+  "id": "solar-001",
+  "name": "SolarTech Innovations",
+  "industry": "Renewable Energy Manufacturing",
+  "description": "Early-stage startup developing next-generation solar panel manufacturing processes with 30% improved efficiency over traditional silicon panels. Currently in pilot production phase with plans to scale to commercial manufacturing. Our technology uses advanced perovskite materials combined with traditional silicon cells to achieve higher conversion rates at lower manufacturing costs.",
+  "website": "https://example.com/solartech",
+  "state": "NSW",
+  "annual_revenue": 500000,
+  "employee_count": 8,
+  "sectors": ["renewable-energy", "manufacturing"],
+  "established": 2023,
+  "certifications": [],
+  "looking_for": [
+    "Early-stage R&D grants",
+    "Manufacturing scale-up funding",
+    "Innovation commercialization support",
+    "Clean energy technology grants",
+    "Export development for renewable energy products"
+  ],
+  "recent_projects": [
+    "Perovskite-silicon hybrid cell development",
+    "Pilot production line setup",
+    "Efficiency testing and validation"
+  ],
+  "target_markets": [
+    "Residential solar installations",
+    "Commercial and industrial solar projects",
+    "Utility-scale solar farms",
+    "International markets (Asia-Pacific)"
+  ],
+  "competitive_advantages": [
+    "30% higher efficiency than standard panels",
+    "Lower manufacturing costs",
+    "Scalable production process",
+    "Experienced founding team from UNSW research"
+  ],
+  "funding_needs": {
+    "current_stage": "Seed/Series A",
+    "funding_required": "2000000-5000000",
+    "use_of_funds": [
+      "Scale pilot production to commercial manufacturing",
+      "Hire technical and sales team",
+      "Achieve product certifications",
+      "Initial marketing and customer acquisition"
+    ]
+  }
+}
