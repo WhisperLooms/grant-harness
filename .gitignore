@@ -95,9 +95,9 @@ back/grant-prototype/scraped_data/
 **/*api*key*.json
 
 # Test data (except examples)
-docs/context/grants/source-documents/*.pdf
-docs/context/grants/indexed-grants.json
-docs/context/grants/gemini-file-index.json
+.docs/context/grants/source-documents/*.pdf
+.docs/context/grants/indexed-grants.json
+.docs/context/grants/gemini-file-index.json
 
 # Frontend (Phase 2)
 front/grant-portal/node_modules/

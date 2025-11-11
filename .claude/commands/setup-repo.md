@@ -7,7 +7,7 @@ You are helping set up the Grant-Harness repository for development. Follow thes
 ## Tasks
 
 1. **Verify Directory Structure**
-   - Check that all required directories exist (back/grant-prototype/, docs/, .cursor/rules/, etc.)
+   - Check that all required directories exist (back/grant-prototype/, ..docs/, .cursor/rules/, etc.)
    - List any missing directories
 
 2. **Set Up Python Environment**

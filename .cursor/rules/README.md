@@ -132,7 +132,7 @@ Grant-Harness requires organized structure for prototype and production phases..
 - **Monorepo with clear separation**: Organized by phase and component (chosen)
 
 ### Decision
-Use monorepo structure with clear separation: back/, front/, docs/, .cursor/rules/...
+Use monorepo structure with clear separation: back/, front/, .docs/, .cursor/rules/...
 
 ### Consequences
 * **Pros**: Clear boundaries, single git history, shared documentation
@@ -205,13 +205,13 @@ ADR-XXXX: <Short Title> — <Status>
 
 ### Related Documentation
 
-**Specifications** (`docs/specs/`):
+**Specifications** (`.docs/specs/`):
 - `Grant-Harness_Repository-Initiation-Plan.md` - Week 0-4 development roadmap
 
-**Research** (`docs/research/`):
+**Research** (`.docs/research/`):
 - `Australian Government Grant Sources.md` - 50+ target grant sources
 
-**Test Data** (`docs/context/`):
+**Test Data** (`.docs/context/`):
 - `test-companies/` - Test company profiles (EMEW, SolarTech, AI Solutions QLD)
 - `grants/` - Sample grants and Gemini upload metadata
 
@@ -264,7 +264,7 @@ Before committing ADR changes:
 - [ ] If superseding: old ADR updated with "Superseded by" and status changed
 - [ ] Concise prose (~200-300 words per ADR)
 - [ ] AI agent guidance included in Compliance/Verification
-- [ ] Cross-references to `docs/specs/` where appropriate
+- [ ] Cross-references to `.docs/specs/` where appropriate
 
 ---
 

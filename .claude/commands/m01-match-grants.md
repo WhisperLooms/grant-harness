@@ -8,7 +8,7 @@ You are helping match a company to relevant government grants using AI-powered s
 
 `/match-grants <company-profile-path>`
 
-Example: `/match-grants docs/context/test-companies/emew-profile.json`
+Example: `/match-grants ..docs/context/test-companies/emew-profile.json`
 
 ## Tasks
 

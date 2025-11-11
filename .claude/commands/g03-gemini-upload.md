@@ -1,15 +1,22 @@
 ---
-description: Upload scraped grants to Gemini File API
+description: Upload grant documents to Gemini File Search vector database
 ---
 
-You are helping upload scraped grant data to Gemini File Search for semantic matching.
+# G03: Upload to Gemini File Search
+
+You are assisting with the Grant-Harness project's grant discovery workflow. Your task is to upload scraped grant documents to Gemini File Search for semantic vector search.
+
+## Context
+
+This is the **third step** in the grant workflow (g→c→m→a→p→s). This command takes the detailed grant data from `/g02-grant-docs` and uploads it to Gemini's vector database for AI-powered matching.
 
 ## Tasks
 
 1. **Verify Prerequisites**
    - Check that `GOOGLE_API_KEY` is set in `.env`
-   - Verify grant data files exist in `back/grant-prototype/output/`
+   - Verify grant data files exist in `back/grant-prototype/.outputs/g02-grant-docs/`
    - Check that `gemini_store/file_manager.py` exists
+   - Load index from `g02-grant-docs/index.json`
 
 2. **Prepare Upload**
    - Navigate to `back/grant-prototype/`
@@ -25,7 +32,7 @@ You are helping upload scraped grant data to Gemini File Search for semantic mat
    - Monitor upload progress
 
 4. **Update Index**
-   - Verify `docs/context/grants/gemini-file-index.json` is updated
+   - Verify `.docs/context/grants/gemini-file-index.json` is updated
    - Check that file IDs and metadata are recorded
    - Count total grants in corpus
 

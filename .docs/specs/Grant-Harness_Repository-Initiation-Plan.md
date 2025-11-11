@@ -152,7 +152,7 @@ grant-harness/
 │       ├── match-grants.md
 │       └── test-emew.md
 │
-├── docs/
+├── .docs/
 │   ├── specs/                 # SpecKit specifications
 │   ├── research/              # Grant source research
 │   ├── architecture/          # Architecture diagrams
@@ -241,7 +241,7 @@ pip install --upgrade pip
 # Create initial structure
 mkdir -p .cursor/rules/{platform,backend/grant-prototype,frontend}
 mkdir -p .claude/commands
-mkdir -p docs/{specs,research,architecture,context/grants/source-documents,context/test-companies}
+mkdir -p .docs/{specs,research,architecture,context/grants/source-documents,context/test-companies}
 mkdir -p back/grant-prototype/{scrapers,gemini_store,matching,models,tests}
 
 # Initialize git
@@ -267,7 +267,7 @@ git commit -m "feat: initialize repository structure"
 * \[ \] ADR-0001 documenting monorepo structure  
 * \[ \] ADR-0002 documenting Gemini File Search choice  
 * \[ \] README.md with project overview and setup instructions  
-* \[ \] Git commit: "docs: add core documentation and ADR framework"
+* \[ \] Git commit: ".docs: add core documentation and ADR framework"
 
 **ADR Template:**
 
@@ -429,7 +429,7 @@ python -c "import google.generativeai; print('Gemini SDK installed')"
 * \[ \] 5+ Claude slash commands created  
 * \[ \] .cursor/rules populated  
 * \[ \] CONTRIBUTING.md with workflow guide  
-* \[ \] Git commit: "docs: add Claude context and development workflow"
+* \[ \] Git commit: ".docs: add Claude context and development workflow"
 
 **CLAUDE.md (Starter):**
 
@@ -467,7 +467,7 @@ See ADRs in `.cursor/rules/` for detailed rationale:
 ## Code Style
 - Python: Black formatter (100 char line length)
 - Type hints required for all functions
-- Docstrings: Google style
+- .docstrings: Google style
 - Tests: pytest with fixtures
 
 ## Grant Data Schema
@@ -490,7 +490,7 @@ class Grant(BaseModel):
 
 ## **Target Grant Sources**
 
-See `docs/research/grant-sources.md` for comprehensive list of 50+ sources.
+See `.docs/research/grant-sources.md` for comprehensive list of 50+ sources.
 
 **Primary Sources:**
 
@@ -502,21 +502,21 @@ See `docs/research/grant-sources.md` for comprehensive list of 50+ sources.
 
 ## **Test Data**
 
-* EMEW case study: `docs/context/test-companies/emew-profile.json`  
-* Sample grants: `docs/context/grants/source-documents/`
+* EMEW case study: `.docs/context/test-companies/emew-profile.json`  
+* Sample grants: `.docs/context/grants/source-documents/`
 
 ## **Gemini Integration**
 
 * Use `google.generativeai` SDK  
 * Files uploaded to Gemini File API  
-* Metadata stored in `docs/context/grants/gemini-file-index.json`  
+* Metadata stored in `.docs/context/grants/gemini-file-index.json`  
 * Query with file search tool enabled
 
 ## **Common Tasks**
 
 * Scrape grants: `/scrape-grants federal vic nsw qld`  
 * Upload to Gemini: `/upload-grants-to-gemini`  
-* Match company: `/match-grants docs/context/test-companies/emew-profile.json`  
+* Match company: `/match-grants .docs/context/test-companies/emew-profile.json`  
 * Run tests: `/test-prototype`
 
 ## **Current Sprint**
@@ -537,19 +537,19 @@ Refer to ADRs first, then ask in project discussions.
 1. Port grant sources research from existing comprehensive document
 2. Create test company profiles (EMEW + 2 others)
 3. Manually collect 5-10 sample grant PDFs
-4. Organize in docs/context/
+4. Organize in .docs/context/
 5. Create grant source tracking spreadsheet
 
 **Deliverables:**
-- [ ] docs/research/grant-sources.md with 50+ sources
+- [ ] .docs/research/grant-sources.md with 50+ sources
 - [ ] 3 test company profiles in JSON format
 - [ ] 5-10 sample grant PDFs saved
 - [ ] Grant source tracking spreadsheet (Google Sheets)
-- [ ] Git commit: "docs: add grant sources research and test data"
+- [ ] Git commit: ".docs: add grant sources research and test data"
 
 **Test Company Profiles:**
 ```json
-// docs/context/test-companies/emew-profile.json
+// .docs/context/test-companies/emew-profile.json
 {
   "id": "emew-001",
   "name": "EMEW Corporation",
@@ -570,7 +570,7 @@ Refer to ADRs first, then ask in project discussions.
   ]
 }
 
-// docs/context/test-companies/solar-startup-profile.json
+// .docs/context/test-companies/solar-startup-profile.json
 {
   "id": "solar-001",
   "name": "SolarTech Innovations",
@@ -589,7 +589,7 @@ Refer to ADRs first, then ask in project discussions.
   ]
 }
 
-// docs/context/test-companies/ai-consultancy-profile.json
+// .docs/context/test-companies/ai-consultancy-profile.json
 {
   "id": "ai-001",
   "name": "AI Solutions Queensland",
@@ -686,7 +686,7 @@ Refer to ADRs first, then ask in project discussions.
 * \[ \] back/grant-prototype/README.md complete  
 * \[ \] .env.example file created  
 * \[ \] All tests passing  
-* \[ \] Git commit: "docs: complete Week 1 documentation"
+* \[ \] Git commit: ".docs: complete Week 1 documentation"
 
 ---
 
@@ -768,14 +768,14 @@ By end of Week 0 (Day 5), you should have:
 3. **CONTRIBUTING.md** \- Development workflow  
 4. **ADR-0001** \- Repository structure decision  
 5. **ADR-0002** \- Gemini File Search decision  
-6. **docs/research/grant-sources.md** \- Comprehensive grant source list  
+6. **.docs/research/grant-sources.md** \- Comprehensive grant source list  
 7. **back/grant-prototype/README.md** \- Prototype usage guide
 
 ### **External Resources**
 
-* [Gemini File Search Docs](https://ai.google.dev/gemini-api/docs/file-search)  
-* [Scrapy Documentation](https://docs.scrapy.org/)  
-* [Pydantic Docs](https://docs.pydantic.dev/)  
+* [Gemini File Search .docs](https://ai.google.dev/gemini-api/.docs/file-search)  
+* [Scrapy Documentation](https://.docs.scrapy.org/)  
+* [Pydantic .docs](https://.docs.pydantic.dev/)  
 * [ADR Template](https://github.com/joelparkerhenderson/architecture-decision-record)
 
 ### **Internal References**

@@ -1,6 +1,6 @@
 # Grant-Harness Project Context
 
-Essential guidance for Grant-Harness development. For detailed specifications, see `docs/specs/` and workflow instructions see `.cursor/rules/`.
+Essential guidance for Grant-Harness development. For detailed specifications, see `.docs/specs/` and workflow instructions see `.cursor/rules/`.
 
 ## Project Overview
 
@@ -13,8 +13,8 @@ Essential guidance for Grant-Harness development. For detailed specifications, s
 **Current Phase**: Building Python-based proof-of-concept with Gemini File Search integration.
 
 For comprehensive details:
-- **Initiation Plan**: `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Complete Week 0-4 development roadmap
-- **Grant Sources**: `docs/research/Australian Government Grant Sources.md` - 50+ grant sources documented
+- **Initiation Plan**: `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Complete Week 0-4 development roadmap
+- **Grant Sources**: `.docs/research/Australian Government Grant Sources.md` - 50+ grant sources documented
 - **Project Structure**: `.cursor/rules/folder-structure.mdc` - Repository organization
 - **Architecture**: `.cursor/rules/platform/ADR.mdc` - Platform-level architectural decisions
 
@@ -43,7 +43,7 @@ This project follows a **phased development pattern**:
 3. Generate pre-populated applications
 4. Deploy to production
 
-See `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` for detailed roadmap.
+See `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` for detailed roadmap.
 
 ## Directory Structure & Component Mapping
 
@@ -69,10 +69,10 @@ See `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` for detailed roadma
 
 | Working in... | Read FIRST | Then read |
 |--------------|-----------|-----------|
-| `back/grant-prototype/` | `.cursor/rules/backend/grant-prototype/ADR.mdc` | `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
+| `back/grant-prototype/` | `.cursor/rules/backend/grant-prototype/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
 | `back/grant-adk/` (future) | `.cursor/rules/backend/ADR.mdc` | `.cursor/rules/backend/workflow.mdc` |
 | `front/grant-portal/` (future) | `.cursor/rules/frontend/ADR.mdc` | `.cursor/rules/frontend/workflow.mdc` |
-| Platform/Testing | `.cursor/rules/platform/ADR.mdc` | `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
+| Platform/Testing | `.cursor/rules/platform/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
 
 ## Key Commands
 
@@ -94,29 +94,73 @@ python -m gemini_store.file_manager             # Upload grants to Gemini
 python -m gemini_store.query_engine             # Query grants
 
 # Matching
-python -m matching.grant_matcher docs/context/test-companies/emew-profile.json
+python -m matching.grant_matcher .docs/context/test-companies/emew-profile.json
 ```
 
-### Claude Slash Commands (When Set Up)
-```bash
-# Available commands:
-# /scrape-grants federal vic nsw qld    - Scrape all grant sources
-# /upload-grants-to-gemini              - Upload to Gemini File API
-# /match-grants <company-profile-path>  - Match company to grants
-# /test-prototype                       - Run full test suite
-```
+### Claude Slash Commands
+
+**Complete Workflow**: g → c → m → a → p → s
+
+Commands are organized by workflow phase using a letter + 2-digit number system:
+
+#### G-Series: Grant Discovery & Data Collection
+- `/g01-grant-lists` - Compile comprehensive grant list (CSV output)
+- `/g02-grant-docs <csv-path>` - Scrape full details + download documents
+- `/g03-gemini-upload` - Upload grants to Gemini File Search
+- `/g04-grant-sync` - Re-scrape sources, detect changes/new grants
+- `/g05-grant-validate` - Verify data quality and completeness
+
+#### C-Series: Company Profiling
+- `/c01-company-scrape <company-url>` - Extract data from company website
+- `/c02-company-profile <company-id>` - Build structured profile
+- `/c03-company-vector <company-id>` - Create company vector database
+- `/c04-company-docs <company-id> <docs-dir>` - Process uploaded documents
+- `/c05-company-validate <company-id>` - Validate profile completeness
+
+#### M-Series: Matching & Analysis
+- `/m01-match-grants <company-id>` - AI-powered grant matching
+- `/m02-match-explain <company-id> <grant-id>` - Deep-dive match reasoning
+- `/m03-match-rank <company-id>` - Sort/filter by relevance, funding, deadline
+- `/m04-match-eligibility <company-id> <grant-id>` - Detailed eligibility check
+- `/m05-match-export <company-id>` - Export results to CSV/PDF/PPTX
+
+#### A-Series: Application Replication (Phase 2)
+- `/a01-app-identify <grant-id>` - Identify application form structure
+- `/a02-app-extract <grant-id>` - Extract questions/fields from form
+- `/a03-app-replicate <grant-id>` - Generate NextJS form component
+- `/a04-app-map <company-id> <grant-id>` - Map data to form fields
+- `/a05-app-validate <company-id> <grant-id>` - Check form completeness
+
+#### P-Series: Population & Collaboration (Phase 2)
+- `/p01-populate-ai <company-id> <grant-id>` - AI auto-fill form fields
+- `/p02-populate-review <company-id> <grant-id>` - Mark fields for review
+- `/p03-populate-comment <company-id> <grant-id>` - Add consultant comments
+- `/p04-populate-docs <company-id> <grant-id>` - Attach supporting documents
+- `/p05-populate-export <company-id> <grant-id>` - Generate draft PDF
+
+#### S-Series: Signoff & Submission (Phase 2-3)
+- `/s01-signoff-request <company-id> <grant-id>` - Request approvals
+- `/s02-signoff-track <company-id> <grant-id>` - Monitor approval status
+- `/s03-signoff-changes <company-id> <grant-id>` - Log review changes
+- `/s04-signoff-finalize <company-id> <grant-id>` - Lock for submission
+- `/s05-submit-portal <company-id> <grant-id>` - Upload to grant portal
+
+#### Utility Commands
+- `/setup-repo` - Initialize development environment
+- `/test-prototype` - Run full test suite
 
 ## Architecture Overview
 
 ### Phase 1: Prototype Architecture
 
 **Components**:
-- **Scrapers**: Extract grant data from government websites
-  - `scrapers/base_scraper.py` - Common functionality
-  - `scrapers/federal_grants.py` - GrantConnect scraper
-  - `scrapers/vic_grants.py` - Sustainability Victoria
-  - `scrapers/nsw_grants.py` - NSW Grants Portal
-  - `scrapers/qld_grants.py` - Business Queensland
+- **Scrapers**: Extract grant data from government websites using AI-powered crawl4ai
+  - `scrapers/base_crawler.py` - Common async crawler functionality
+  - `scrapers/grant_list_crawler.py` - High-level list extraction
+  - `scrapers/grant_detail_crawler.py` - Deep scrape individual grants
+  - `scrapers/company_scraper.py` - Company website scraping
+  - `scrapers/sources/{federal,vic,nsw,qld}.py` - Source-specific configs
+  - **Technology**: crawl4ai with Gemini LLM extraction (see ADR-2050)
 
 - **Gemini Store**: Upload and query grants via Gemini File API
   - `gemini_store/file_manager.py` - File upload management
@@ -130,12 +174,28 @@ python -m matching.grant_matcher docs/context/test-companies/emew-profile.json
 - **Models**: Pydantic schemas for data validation
   - `models/entities.py` - Grant, Company, Match schemas
 
-**Data Flow**: Scraper → JSON → Gemini File API → Semantic Search → Match → JSON Output
+**Data Flow**:
+1. **Grant Discovery**: crawl4ai scraper → CSV list → detailed JSON + PDFs
+2. **Upload**: Grant docs → Gemini File Search vector database
+3. **Company Profiling**: Website scrape → structured profile → company vector DB
+4. **Matching**: Semantic search → AI relevance scoring → ranked matches
+5. **Application** (Phase 2): Form replication → AI population → collaborative editing → submission
 
-**Configuration** (`.env` - to be created):
+**Configuration** (`.env`):
 ```env
+# Gemini API (required)
 GOOGLE_API_KEY=your_api_key_here
-GEMINI_PROJECT_ID=your_project_id
+
+# Crawl4AI (uses Gemini for extraction)
+CRAWL4AI_MODEL=gemini-1.5-pro
+CRAWL4AI_USE_GEMINI=true
+
+# Grant Filtering
+GRANT_FROM_DATE=2026-01-01
+
+# Scraper Settings
+SCRAPER_DOWNLOAD_DELAY=2
+PLAYWRIGHT_HEADLESS=true
 ```
 
 ## Grant Data Schema
@@ -178,7 +238,7 @@ class Match(BaseModel):
 
 ## Target Grant Sources
 
-See `docs/research/Australian Government Grant Sources.md` for comprehensive list of 50+ sources.
+See `.docs/research/Australian Government Grant Sources.md` for comprehensive list of 50+ sources.
 
 **Phase 1 Priority Sources** (4 scrapers):
 1. **GrantConnect** - Federal mandatory listing (all federal grants)
@@ -195,14 +255,14 @@ See `docs/research/Australian Government Grant Sources.md` for comprehensive lis
 ## Test Data
 
 ### Test Companies
-- **EMEW**: `docs/context/test-companies/emew-profile.json` - Metal recovery/recycling
+- **EMEW**: `.docs/context/test-companies/emew-profile.json` - Metal recovery/recycling
 - **SolarTech** (to be created): Solar panel manufacturing startup
 - **AI Solutions QLD** (to be created): AI consulting for manufacturers
 
 ### Sample Grants
-- `docs/context/grants/source-documents/` - Manually collected grant PDFs
-- `docs/context/grants/indexed-grants.json` - Scraped grant data
-- `docs/context/grants/gemini-file-index.json` - Gemini upload metadata
+- `.docs/context/grants/source-documents/` - Manually collected grant PDFs
+- `.docs/context/grants/indexed-grants.json` - Scraped grant data
+- `.docs/context/grants/gemini-file-index.json` - Gemini upload metadata
 
 ## Environment Setup
 
@@ -317,7 +377,7 @@ git checkout -b feat/matching-engine     # Week 2 task
 # Commit messages (Conventional Commits)
 git commit -m "feat(scraper): implement GrantConnect scraper"
 git commit -m "fix(gemini): handle upload timeout errors"
-git commit -m "docs(adr): add ADR-0001 Gemini File Search decision"
+git commit -m ".docs(adr): add ADR-0001 Gemini File Search decision"
 ```
 
 ### Task Completion Checklist
@@ -330,14 +390,14 @@ git commit -m "docs(adr): add ADR-0001 Gemini File Search decision"
 ## Documentation Navigation
 
 ### Quick References
-- **Initiation Plan**: `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Week 0-4 roadmap
-- **Grant Sources**: `docs/research/Australian Government Grant Sources.md` - Target websites
+- **Initiation Plan**: `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Week 0-4 roadmap
+- **Grant Sources**: `.docs/research/Australian Government Grant Sources.md` - Target websites
 - **Project Structure**: `.cursor/rules/folder-structure.mdc` - Directory guide
 
 ### Development Context Routing
 
 **When working on Grant Prototype (Phase 1)**:
-1. **Tasks**: `docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Week-by-week plan
+1. **Tasks**: `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Week-by-week plan
 2. **Architecture**: `.cursor/rules/backend/grant-prototype/ADR.mdc` - Prototype decisions
 3. **Structure**: `.cursor/rules/backend/folder-structure.mdc` - Backend directory navigation
 

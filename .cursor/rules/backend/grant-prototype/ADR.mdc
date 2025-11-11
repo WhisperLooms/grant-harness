@@ -66,7 +66,7 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
-|      |                                                            |            |          |            |               |
+| 2050 | [crawl4ai for AI-Powered Web Scraping](#adr-2050)         | 2025-11-12 | Accepted |            |               |
 
 <!-- END:ADR_INDEX -->
 
@@ -113,3 +113,66 @@ END ADR_AGENT_PROTOCOL
 ---
 
 <!-- Grant Prototype tactical ADRs will be added below this line -->
+
+## ADR-2050 — crawl4ai for AI-Powered Web Scraping
+
+<a id="adr-2050"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Phase 1 prototype requires scraping grant data from 50+ Australian government websites with varying structures (static HTML, JavaScript SPAs, PDFs). Initial plan used Scrapy framework, but many government sites have complex layouts requiring intelligent extraction. Need a scraping solution that can handle both structured and unstructured content efficiently.
+
+### Alternatives
+
+* **Scrapy (original plan)**: Industry-standard framework, good for structured sites, but requires custom parsers for each site. Poor handling of JavaScript-heavy sites and PDF content extraction.
+* **Requests + BeautifulSoup**: Simplest approach, but entirely manual parsing. High maintenance burden for 50+ sources.
+* **Playwright only**: Handles JavaScript well but expensive (browser overhead), no built-in intelligent extraction, requires explicit selectors.
+* **crawl4ai (chosen)**: LLM-powered extraction strategy, handles both static and dynamic content, uses Gemini API (already available), reduces custom parser code.
+
+### Decision
+
+Use **crawl4ai with Gemini-powered LLM extraction** for all grant and company website scraping in Phase 1 prototype.
+
+Implementation details:
+- Configure crawl4ai with `google/gemini-1.5-pro` provider using existing `GOOGLE_API_KEY`
+- Use `LLMExtractionStrategy` with structured prompts for grant list extraction and detailed scraping
+- Fallback to Playwright MCP for sites where crawl4ai fails
+- Remove Scrapy dependency from `pyproject.toml`
+- Create base crawler class in `back/grant-prototype/scrapers/base_crawler.py`
+
+### Consequences
+
+* **Pros**:
+  - Intelligent extraction reduces custom parser code by ~70%
+  - Single LLM (Gemini) for both scraping and matching simplifies architecture
+  - Handles JavaScript sites without full browser overhead (crawl4ai optimized)
+  - Natural language extraction prompts easier to maintain than XPath/CSS selectors
+  - No additional API costs (using existing Gemini quota)
+
+* **Cons / risks**:
+  - LLM extraction adds latency vs pure HTML parsing (~2-3s per page vs <1s)
+  - Dependent on LLM quality for extraction accuracy (mitigated by Gemini 1.5 Pro performance)
+  - Less deterministic than explicit selectors (mitigated by structured prompts and validation)
+  - crawl4ai is newer library vs mature Scrapy ecosystem (mitigated by Playwright fallback)
+
+* **Supersedes**: Initial Scrapy-based scraping plan (not yet implemented as ADR)
+
+### Compliance / Verification
+
+- **Week 1 deliverable**: Successful extraction of 10+ grants from GrantConnect using crawl4ai
+- **Validation**: Compare crawl4ai extraction accuracy against manually verified grant data (target: >95% field accuracy)
+- **Performance**: Monitor extraction latency; if >5s per page consistently, optimize prompts or implement caching
+- **Fallback testing**: Verify Playwright MCP fallback works for at least 1 complex site by Week 2
+
+### Migration Notes
+
+Changes from original plan:
+- `scrapy>=2.11.0` removed from dependencies
+- Added: `crawl4ai>=0.2.0`, `aiohttp>=3.9.0`, `playwright>=1.40.0`
+- Scraper modules use async patterns instead of Scrapy's event-driven architecture
+- `.env` updated with `CRAWL4AI_MODEL=gemini-1.5-pro` configuration
+
+---

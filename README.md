@@ -23,7 +23,7 @@ Grant-Harness helps Australian SMEs in recycling, renewable energy, manufacturin
 **Phase**: Week 0 - Foundation Setup (Repository Initialization)
 **Version**: 2.0 (Strategic Rebuild)
 
-This is a fresh start following architectural decisions documented in the [Repository Initiation Plan](docs/specs/Grant-Harness_Repository-Initiation-Plan.md).
+This is a fresh start following architectural decisions documented in the [Repository Initiation Plan](.docs/specs/Grant-Harness_Repository-Initiation-Plan.md).
 
 ## Quick Start
 
@@ -59,7 +59,7 @@ grant-harness/
 ├── back/grant-prototype/    # Phase 1: Python prototype
 ├── back/grant-adk/          # Phase 2: Production ADK agents (future)
 ├── front/grant-portal/      # Phase 2: Next.js frontend (future)
-├── docs/                    # Specifications, research, test data
+├── .docs/                    # Specifications, research, test data
 ├── .cursor/rules/           # AI agent documentation (ADRs)
 └── .claude/commands/        # Claude Code slash commands
 ```
@@ -102,7 +102,7 @@ See [folder structure documentation](.cursor/rules/folder-structure.mdc) for det
 
 ## Target Grant Sources
 
-See [Australian Government Grant Sources](docs/research/Australian Government Grant Sources.md) for comprehensive list of 50+ sources.
+See [Australian Government Grant Sources](.docs/research/Australian Government Grant Sources.md) for comprehensive list of 50+ sources.
 
 **Phase 1 Priority**:
 1. GrantConnect (Federal mandatory listing)
@@ -122,12 +122,12 @@ See [Australian Government Grant Sources](docs/research/Australian Government Gr
 ### For Developers
 - **CLAUDE.md** - Primary guide for AI coding assistants
 - **.cursor/rules/** - Architectural Decision Records (ADRs)
-- **docs/specs/** - Project specifications and roadmap
+- **.docs/specs/** - Project specifications and roadmap
 
 ### For Stakeholders
 - **README.md** - This file (project overview)
-- **docs/specs/Grant-Harness_Repository-Initiation-Plan.md** - Detailed development plan
-- **docs/research/** - Grant sources research
+- **.docs/specs/Grant-Harness_Repository-Initiation-Plan.md** - Detailed development plan
+- **.docs/research/** - Grant sources research
 
 ## Key Architectural Decisions
 
@@ -175,7 +175,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ```bash
 feat(scraper): implement GrantConnect scraper
 fix(gemini): handle upload timeout errors
-docs(adr): add ADR-0003 Scrapy framework decision
+.docs(adr): add ADR-0003 Scrapy framework decision
 ```
 
 ### ADR Workflow

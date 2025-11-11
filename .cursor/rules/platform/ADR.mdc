@@ -145,7 +145,7 @@ grant-harness/
 │   │   └── grant-prototype/ # Prototype tactical ADRs (2050-2099)
 │   └── frontend/           # Frontend ADRs (1000-1999)
 ├── .claude/commands/       # Claude slash commands
-├── docs/                   # Specifications and research
+├── .docs/                   # Specifications and research
 │   ├── specs/              # Project specifications
 │   ├── research/           # Grant sources research
 │   ├── architecture/       # Architecture diagrams
@@ -161,7 +161,7 @@ Each component has independent `pyproject.toml`, `.env`, and deployment scripts.
 
 ### Consequences
 
-* **Pros**: Clear phase separation (prototype vs production), single git repository for coordination, shared documentation in docs/, independent dependency management per component, clean migration path from prototype to ADK, follows emew-agents pattern (proven structure)
+* **Pros**: Clear phase separation (prototype vs production), single git repository for coordination, shared documentation in .docs/, independent dependency management per component, clean migration path from prototype to ADK, follows emew-agents pattern (proven structure)
 * **Cons / risks**: Slightly more complex repo navigation, need to manage multiple virtual environments, risk of confusion between prototype and ADK directories
 * **Supersedes**: —
 * **Superseded by**: —
@@ -215,7 +215,7 @@ Use **Gemini File Search** (Vertex AI RAG Engine) as the exclusive vector storag
 - Upload grant documents (PDFs, HTML, JSON) to Gemini File API
 - Organize in RAG corpus with metadata (jurisdiction, sector, funding range)
 - Use `VertexAiRagRetrieval` tool in ADK agents for semantic search
-- Store corpus metadata in `docs/context/grants/gemini-file-index.json`
+- Store corpus metadata in `.docs/context/grants/gemini-file-index.json`
 
 **Configuration**:
 ```env
@@ -238,7 +238,7 @@ RAG_CORPUS=projects/{project}/locations/{location}/ragCorpora/{corpus_id}
 - `back/grant-prototype/gemini_store/file_manager.py` - File upload management (to be created)
 - `back/grant-prototype/gemini_store/corpus_builder.py` - Corpus organization (to be created)
 - `back/grant-prototype/gemini_store/query_engine.py` - Semantic search queries (to be created)
-- `docs/context/grants/gemini-file-index.json` - Corpus metadata tracking (to be created)
+- `.docs/context/grants/gemini-file-index.json` - Corpus metadata tracking (to be created)
 
 **Cost Analysis**:
 - Self-hosted: ~$50-100/month (vector DB + embeddings + compute)
