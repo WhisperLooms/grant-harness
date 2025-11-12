@@ -170,7 +170,7 @@ class CompanyCorpus:
         self,
         query: str,
         metadata_filter: Optional[str] = None,
-        model: str = "gemini-2.0-flash-exp"
+        model: str = "gemini-2.5-flash"
     ) -> str:
         """
         Query Company Corpus using semantic search.
@@ -225,7 +225,7 @@ class CompanyCorpus:
         company_id: str,
         field_label: str,
         field_description: Optional[str] = None,
-        model: str = "gemini-2.0-flash-exp"
+        model: str = "gemini-2.5-flash"
     ) -> Dict[str, Any]:
         """
         Query company documents to populate a specific application field.

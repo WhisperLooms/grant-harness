@@ -65,7 +65,7 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
-|      |                                                            |            |          |            |               |
+| 2001 | [Gemini 2.5 Flash Required for File Search](#adr-2001)    | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
 
@@ -113,7 +113,81 @@ END ADR_AGENT_PROTOCOL
 
 # Backend Infrastructure ADRs (2000-2049)
 
-<!-- Infrastructure ADRs will be added below this line -->
+## ADR-2001 — Gemini 2.5 Flash Required for File Search
+
+<a id="adr-2001"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Gordon
+
+### Context
+
+Gemini File Search (AI-powered vector search for uploaded documents) is **only supported by Gemini 2.5 models**. This constraint affects both Phase 1 (prototype) and Phase 2 (MVP) as File Search is foundational to the RAG architecture.
+
+During testing, `gemini-2.0-flash-exp` queries failed with: `tools[0].tool_type: required one_of 'tool_type' must have one initialized field`
+
+**Model Compatibility**:
+- ❌ `gemini-2.0-flash-exp` - No File Search support
+- ❌ `gemini-2.0-flash-thinking-exp` - No File Search support
+- ✅ `gemini-2.5-flash` - **Supports File Search** (default)
+- ✅ `gemini-2.5-pro` - **Supports File Search** (opt-in for complex queries)
+
+**Evidence**: https://ai.google.dev/gemini-api/docs/models#gemini-2.5-flash
+
+### Alternatives
+
+**Option 1**: `gemini-2.5-flash` (SELECTED)
+- $0.075/$0.30 per 1M tokens, fast, File Search compatible
+- Selected as default for all corpus queries
+
+**Option 2**: `gemini-2.5-pro`
+- $1.25/$5.00 per 1M tokens, more capable reasoning
+- Available as opt-in for complex matching
+
+**Option 3**: Build custom vector search (Pinecone, Weaviate)
+- Rejected: Additional infrastructure, defeats ADR-2051 (Gemini File Search decision)
+
+### Decision
+
+**Enforce `gemini-2.5-flash` as default model for all Gemini File Search queries in prototype AND MVP.**
+
+**Implementation** (applies to both Phase 1 and Phase 2):
+```python
+# Default parameter in all File Search methods
+model: str = "gemini-2.5-flash"
+
+# Model validation
+if "2.5" not in model:
+    raise ValueError(
+        f"Model '{model}' does not support File Search. "
+        "Use 'gemini-2.5-flash' or 'gemini-2.5-pro'."
+    )
+```
+
+**Configuration**:
+- `.env`: `GEMINI_FILE_SEARCH_MODEL=gemini-2.5-flash`
+- All `CorpusManager`, `GrantCorpus`, `CompanyCorpus`, `QueryEngine` methods use this default
+
+### Consequences
+
+* **Pros**: File Search works, cost-effective ($0.075 input), fast, stable, Pro available as option
+* **Cons / risks**: Model lock-in to 2.5 family, breaking change if 2.0 adds File Search later
+* **Supersedes**: N/A (first backend infrastructure ADR)
+* **Superseded by**: (none)
+
+### Compliance / Verification
+
+**Phase 1 Evidence**:
+- `back/grant-prototype/gemini_store/grant_corpus.py:169` - Default model
+- `back/grant-prototype/scripts/test_grant_corpus.py` - Test with gemini-2.5-flash
+- All 5 test queries successful with grounding sources
+
+**Phase 2 Requirements**:
+- ADK agents must use `gemini-2.5-flash` for File Search tools
+- Production code must include model validation
+- Monitoring should track model usage and costs
+
+**AI Agent Guidance**: When writing ANY code that queries Gemini File Search (Grant Corpus, Company Corpus, cross-corpus matching), ALWAYS use `gemini-2.5-flash` or `gemini-2.5-pro`. Do NOT use 2.0-series models - they will fail. Set default model parameter to `"gemini-2.5-flash"`. This applies to prototype, MVP, and production code.
 
 ---
 

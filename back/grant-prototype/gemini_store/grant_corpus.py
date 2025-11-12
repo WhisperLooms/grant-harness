@@ -166,7 +166,7 @@ class GrantCorpus:
         self,
         query: str,
         metadata_filter: Optional[str] = None,
-        model: str = "gemini-2.0-flash-exp"
+        model: str = "gemini-2.5-flash"
     ) -> str:
         """
         Query Grant Corpus using semantic search.
@@ -188,22 +188,17 @@ class GrantCorpus:
         if not self.store_name:
             raise ValueError("Grant Corpus not initialized. Call create_or_get_corpus() first.")
 
-        # Prepare tool configuration
-        tool_config = types.Tool(
-            file_search=types.FileSearch(
-                file_search_store_names=[self.store_name]
-            )
-        )
-
+        # Prepare File Search tool configuration (use snake_case for SDK)
+        file_search_params = {'file_search_store_names': [self.store_name]}
         if metadata_filter:
-            tool_config.file_search.metadata_filter = metadata_filter
+            file_search_params['metadata_filter'] = metadata_filter
 
         # Generate content with File Search
         response = self.client.models.generate_content(
             model=model,
             contents=query,
             config=types.GenerateContentConfig(
-                tools=[tool_config]
+                tools=[types.Tool(file_search=types.FileSearch(**file_search_params))]
             )
         )
 
