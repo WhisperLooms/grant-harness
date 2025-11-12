@@ -12,8 +12,8 @@ precise semantic search without company data contamination.
 
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 
 
 class GrantCorpus:
@@ -63,7 +63,7 @@ class GrantCorpus:
                 break
 
         if existing_store and force_recreate:
-            print(f"🗑️  Deleting existing Grant Corpus: {existing_store.name}")
+            print(f"[DELETE]  Deleting existing Grant Corpus: {existing_store.name}")
             self.client.file_search_stores.delete(
                 name=existing_store.name,
                 config={'force': True}
@@ -71,12 +71,12 @@ class GrantCorpus:
             existing_store = None
 
         if existing_store:
-            print(f"✅ Using existing Grant Corpus: {existing_store.name}")
+            print(f"[OK] Using existing Grant Corpus: {existing_store.name}")
             self.store_name = existing_store.name
             return existing_store.name
 
         # Create new store
-        print(f"🆕 Creating new Grant Corpus: {display_name}")
+        print(f"[NEW] Creating new Grant Corpus: {display_name}")
         file_search_store = self.client.file_search_stores.create(
             config={'display_name': display_name}
         )
@@ -119,7 +119,7 @@ class GrantCorpus:
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        print(f"📤 Uploading {file_path.name} to Grant Corpus...")
+        print(f"[UPLOAD] Uploading {file_path.name} to Grant Corpus...")
 
         # Prepare custom metadata
         custom_metadata = []
@@ -152,19 +152,21 @@ class GrantCorpus:
             config=config_dict
         )
 
-        # Wait for processing to complete
-        print(f"⏳ Processing {file_path.name}...")
-        # Note: The operation is async, but for simplicity we return immediately
-        # In production, you might want to poll operation.status
+        # Wait for processing to complete (poll operation status)
+        print(f"[WAIT] Processing {file_path.name}...")
+        import time
+        while not operation.done:
+            time.sleep(2)
+            operation = self.client.operations.get(operation)
 
-        print(f"✅ Uploaded: {file_path.name}")
+        print(f"[OK] Uploaded: {file_path.name}")
         return file_path.name
 
     def query(
         self,
         query: str,
         metadata_filter: Optional[str] = None,
-        model: str = "gemini-2.0-flash-exp"
+        model: str = "gemini-2.5-flash"
     ) -> str:
         """
         Query Grant Corpus using semantic search.
@@ -186,24 +188,26 @@ class GrantCorpus:
         if not self.store_name:
             raise ValueError("Grant Corpus not initialized. Call create_or_get_corpus() first.")
 
-        # Prepare tool configuration
-        tool_config = types.Tool(
-            file_search=types.FileSearch(
-                file_search_store_names=[self.store_name]
-            )
-        )
-
+        # Prepare File Search tool configuration (use snake_case for SDK)
+        file_search_params = {'file_search_store_names': [self.store_name]}
         if metadata_filter:
-            tool_config.file_search.metadata_filter = metadata_filter
+            file_search_params['metadata_filter'] = metadata_filter
 
         # Generate content with File Search
         response = self.client.models.generate_content(
             model=model,
             contents=query,
             config=types.GenerateContentConfig(
-                tools=[tool_config]
+                tools=[types.Tool(file_search=types.FileSearch(**file_search_params))]
             )
         )
+
+        # Extract grounding sources (optional)
+        grounding = response.candidates[0].grounding_metadata if response.candidates else None
+        if grounding and grounding.grounding_chunks:
+            sources = {c.retrieved_context.title for c in grounding.grounding_chunks if hasattr(c, 'retrieved_context')}
+            if sources:
+                print(f"[INFO] Grounding sources: {', '.join(sources)}")
 
         return response.text
 
@@ -222,7 +226,7 @@ class GrantCorpus:
         # This is a placeholder for when that functionality is available
         # For now, we can only track uploads manually
 
-        print("⚠️  Document listing not yet fully supported by Gemini File Search API")
+        print("[WARN]  Document listing not yet fully supported by Gemini File Search API")
         print("    Track uploaded documents via metadata or external tracking")
 
         return documents

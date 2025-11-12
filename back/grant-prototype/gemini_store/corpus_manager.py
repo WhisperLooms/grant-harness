@@ -14,7 +14,7 @@ This separation enables:
 import os
 from pathlib import Path
 from typing import Optional, Dict, Any
-import google.generativeai as genai
+from google import genai
 
 from .grant_corpus import GrantCorpus
 from .company_corpus import CompanyCorpus
@@ -55,8 +55,7 @@ class CorpusManager:
                 "GOOGLE_API_KEY not found. Set it via environment variable or pass to constructor."
             )
 
-        # Configure Gemini API
-        genai.configure(api_key=self.api_key)
+        # Create Gemini API client
         self.client = genai.Client(api_key=self.api_key)
 
         # Initialize corpus managers
@@ -105,7 +104,7 @@ class CorpusManager:
         }
         config_path.write_text(json.dumps(config, indent=2))
 
-        print(f"✅ Gemini File Search initialized:")
+        print(f"[OK] Gemini File Search initialized:")
         print(f"   Grant Corpus: {grant_store_name}")
         print(f"   Company Corpus: {company_store_name}")
         print(f"   Config saved to: {config_path}")
@@ -118,7 +117,7 @@ class CorpusManager:
 
         Useful for debugging and understanding corpus state.
         """
-        print("📋 All Gemini File Search Stores:")
+        print("[LIST] All Gemini File Search Stores:")
         for store in self.client.file_search_stores.list():
             print(f"   - {store.name} ({store.display_name})")
             # Get store stats if available
@@ -254,7 +253,7 @@ class CorpusManager:
         # Check API key
         try:
             # Try listing stores to verify API key works
-            list(self.client.file_search_stores.list(page_size=1))
+            list(self.client.file_search_stores.list())
             status["api_key"] = "valid"
         except Exception as e:
             status["api_key"] = f"error: {str(e)}"

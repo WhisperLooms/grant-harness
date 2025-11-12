@@ -1,12 +1,12 @@
 ---
-description: EMEW Agents Repository Structure
+description: Grant Harness Repository Structure
 alwaysApply: false
 ---
 
 # EMEW Agents - Repository Folder Structure
 
 This document provides an overview of the top-level directory structure for the EMEW Agents project. For detailed structure of specific subsystems, see:
-- Backend: [backend/folder-structure.mdc](backend/folder-structure.mdc) - `back/knowledge-adk/` agent
+- Backend: [backend/folder-structure.mdc](backend/folder-structure.mdc) - `back/grant-prototype/` agent
 - Frontend: [frontend/folder-structure.mdc](frontend/folder-structure.mdc) - `front/` templates
 
 ---
@@ -16,18 +16,16 @@ This document provides an overview of the top-level directory structure for the 
 ```
 emew-agents/
 ├── .claude/               # Claude Code AI configuration
-├── .cursor/               # Cursor AI IDE configuration
+├── .cursor/               # Cursor AI IDE configuration including code rules aligned with CLAUDE.md
 ├── .docs/                 # Project documentation
 ├── .git/                  # Git repository data
 ├── .gitignore             # Git ignore rules
 ├── .playwright-mcp/       # Playwright MCP server data
 ├── .specstory/            # Spec tracking (optional)
-├── adk-samples/           # Google ADK sample agents (reference)
 ├── back/                  # Backend agents
-│   ├── RAG/               # RAG agent (✅ Operational)
-│   └── llm-auditor/       # LLM auditor agent (📋 Template)
-├── front/                 # Frontend agents
-│   └── realtime-conversational-agent/  # Real-time agent (📋 Template)
+│   ├── grant-prototype/   # python code run by claude commands, skills and agents (next phase)
+│   └── grant-adk/         # Future MVP agent (To be developed)
+├── front/                 # Frontend for agents to be developed in nextjs
 ├── CLAUDE.md              # Main development guide for AI agents
 └── README.md              # Human-readable project overview
 ```
@@ -61,14 +59,14 @@ emew-agents/
 
 **Key Subdirectories**:
 - `rules/` - Auto-loaded documentation for AI context
-  - `ADR.mdc` - Platform architectural decisions (ADR-0001 to ADR-0003)
+  - `ADR.mdc` - Platform architectural decisions (ADR-0001 to ADR-1000)
   - `folder-structure.mdc` - This file
   - `backend/` - Backend RAG agent documentation
     - `ADR.mdc` - Backend ADRs (ADR-2001 to ADR-2005)
     - `workflow.mdc` - Development workflow for RAG agent
     - `folder-structure.mdc` - Backend directory structure
   - `frontend/` - Frontend documentation (placeholder)
-    - `ADR.mdc` - Frontend ADRs (ADR-1001 placeholder)
+    - `ADR.mdc` - Frontend ADRs (ADR-1001 to ADR-2000 placeholder)
     - `workflow.mdc` - Frontend workflow (placeholder)
     - `folder-structure.mdc` - Frontend directory structure (placeholder)
 
@@ -89,9 +87,8 @@ emew-agents/
 **Status**: Active
 
 **Key Subdirectories**:
-- `prompts/` - Development prompts and instructions
-  - `251106_initiating-prompt.md` - Initial setup prompt
-- `screenshots/` - Documentation screenshots for evidence
+- `context/` - Provides initial context for project such as grants, company etc
+- `specs/` - Documentation screenshots for evidence
   - Browser automation screenshots from testing
   - Configuration validation screenshots
 

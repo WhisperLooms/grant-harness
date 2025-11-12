@@ -7,8 +7,8 @@ but QueryEngine implements complex multi-step RAG patterns.
 """
 
 from typing import List, Dict, Any, Optional
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 
 
 class QueryEngine:

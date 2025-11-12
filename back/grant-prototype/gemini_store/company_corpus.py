@@ -13,8 +13,8 @@ grant data contamination.
 
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 
 
 class CompanyCorpus:
@@ -64,7 +64,7 @@ class CompanyCorpus:
                 break
 
         if existing_store and force_recreate:
-            print(f"🗑️  Deleting existing Company Corpus: {existing_store.name}")
+            print(f"[DELETE]  Deleting existing Company Corpus: {existing_store.name}")
             self.client.file_search_stores.delete(
                 name=existing_store.name,
                 config={'force': True}
@@ -72,12 +72,12 @@ class CompanyCorpus:
             existing_store = None
 
         if existing_store:
-            print(f"✅ Using existing Company Corpus: {existing_store.name}")
+            print(f"[OK] Using existing Company Corpus: {existing_store.name}")
             self.store_name = existing_store.name
             return existing_store.name
 
         # Create new store
-        print(f"🆕 Creating new Company Corpus: {display_name}")
+        print(f"[NEW] Creating new Company Corpus: {display_name}")
         file_search_store = self.client.file_search_stores.create(
             config={'display_name': display_name}
         )
@@ -121,7 +121,7 @@ class CompanyCorpus:
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        print(f"📤 Uploading {file_path.name} to Company Corpus ({company_id})...")
+        print(f"[UPLOAD] Uploading {file_path.name} to Company Corpus ({company_id})...")
 
         # Prepare custom metadata (ALWAYS include company_id)
         custom_metadata = [
@@ -156,19 +156,21 @@ class CompanyCorpus:
             config=config_dict
         )
 
-        # Wait for processing to complete
-        print(f"⏳ Processing {file_path.name}...")
-        # Note: The operation is async, but for simplicity we return immediately
-        # In production, you might want to poll operation.status
+        # Wait for processing to complete (poll operation status)
+        print(f"[WAIT] Processing {file_path.name}...")
+        import time
+        while not operation.done:
+            time.sleep(2)
+            operation = self.client.operations.get(operation)
 
-        print(f"✅ Uploaded: {file_path.name}")
+        print(f"[OK] Uploaded: {file_path.name}")
         return file_path.name
 
     def query(
         self,
         query: str,
         metadata_filter: Optional[str] = None,
-        model: str = "gemini-2.0-flash-exp"
+        model: str = "gemini-2.5-flash"
     ) -> str:
         """
         Query Company Corpus using semantic search.
@@ -209,6 +211,13 @@ class CompanyCorpus:
             )
         )
 
+        # Extract grounding sources (optional)
+        grounding = response.candidates[0].grounding_metadata if response.candidates else None
+        if grounding and grounding.grounding_chunks:
+            sources = {c.retrieved_context.title for c in grounding.grounding_chunks if hasattr(c, 'retrieved_context')}
+            if sources:
+                print(f"[INFO] Grounding sources: {', '.join(sources)}")
+
         return response.text
 
     def query_for_field(
@@ -216,7 +225,7 @@ class CompanyCorpus:
         company_id: str,
         field_label: str,
         field_description: Optional[str] = None,
-        model: str = "gemini-2.0-flash-exp"
+        model: str = "gemini-2.5-flash"
     ) -> Dict[str, Any]:
         """
         Query company documents to populate a specific application field.
