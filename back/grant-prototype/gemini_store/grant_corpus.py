@@ -152,10 +152,12 @@ class GrantCorpus:
             config=config_dict
         )
 
-        # Wait for processing to complete
+        # Wait for processing to complete (poll operation status)
         print(f"[WAIT] Processing {file_path.name}...")
-        # Note: The operation is async, but for simplicity we return immediately
-        # In production, you might want to poll operation.status
+        import time
+        while not operation.done:
+            time.sleep(2)
+            operation = self.client.operations.get(operation)
 
         print(f"[OK] Uploaded: {file_path.name}")
         return file_path.name
@@ -204,6 +206,13 @@ class GrantCorpus:
                 tools=[tool_config]
             )
         )
+
+        # Extract grounding sources (optional)
+        grounding = response.candidates[0].grounding_metadata if response.candidates else None
+        if grounding and grounding.grounding_chunks:
+            sources = {c.retrieved_context.title for c in grounding.grounding_chunks if hasattr(c, 'retrieved_context')}
+            if sources:
+                print(f"[INFO] Grounding sources: {', '.join(sources)}")
 
         return response.text
 
