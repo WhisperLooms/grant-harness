@@ -68,7 +68,7 @@ END ADR_AGENT_PROTOCOL
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
 | 2053 | [EMEW Bootstrap Strategy](#adr-2053)                      | 2025-11-12 | Accepted | —          | —             |
 | 2052 | [Input Data Management Pattern](#adr-2052)                | 2025-11-12 | Accepted | —          | —             |
-| 2051 | [Gemini Dual-Corpus Architecture](#adr-2051)              | 2025-11-12 | Accepted | —          | —             |
+| 2051 | [Gemini Dual-Corpus Architecture](#adr-2051)              | 2025-11-12 | Proposed | —          | —             |
 | 2050 | [crawl4ai for AI-Powered Web Scraping](#adr-2050)         | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
@@ -140,7 +140,7 @@ Phase 1 prototype requires scraping grant data from 50+ Australian government we
 Use **crawl4ai with Gemini-powered LLM extraction** for all grant and company website scraping in Phase 1 prototype.
 
 Implementation details:
-- Configure crawl4ai with `google/gemini-1.5-pro` provider using existing `GOOGLE_API_KEY`
+- Configure crawl4ai with `google/gemini-2.5-flash` provider using existing `GOOGLE_API_KEY`
 - Use `LLMExtractionStrategy` with structured prompts for grant list extraction and detailed scraping
 - Fallback to Playwright MCP for sites where crawl4ai fails
 - Remove Scrapy dependency from `pyproject.toml`
@@ -184,12 +184,12 @@ Changes from original plan:
 
 <a id="adr-2051"></a>
 **Date**: 2025-11-12
-**Status**: Accepted
+**Status**: Proposed
 **Owner**: Grant-Harness Team
 
 ### Context
 
-Grant matching requires semantic search across two distinct knowledge domains: (1) Grant documents (guidelines, eligibility criteria, application requirements) and (2) Company profiles (business descriptions, capabilities, financials, project plans). Original plan used single Gemini corpus for all documents, but this creates semantic search challenges - queries like "battery recycling company" would match both grant descriptions AND company descriptions, reducing precision.
+Grant matching requires semantic search across two distinct knowledge domains: (1) Grant documents (guidelines, eligibility criteria, application requirements) and (2) Company profiles (business descriptions, capabilities, financials, project plans). Original plan used single Gemini corpus for all documents, but this creates semantic search challenges - queries like "battery recycling company" would match both grant descriptions AND company descriptions, reducing precision. Future consideration will be given to other corpora such as 'markets' that will relate to grant applications.
 
 ### Alternatives
 
@@ -445,242 +445,5 @@ Original Week 1 plan: Manually download 15 grant PDFs as "bootstrap" since full 
 - Day 5: Matching results show BBI + IGP as top 2 matches (matches manual research priority)
 
 **AI Agent Guidance**: Use existing EMEW grant research from `.docs/context/emew-context/grant-search/` instead of manual discovery. Parse `Grants_Summary_2025-10-29.md` to extract grant URLs. Download PDFs for identified grants (BBI, IGP, VMA, BTV, ARP). Migrate EMEW corporate PDFs from `.docs/context/emew-context/corporate-info/` to `.inputs/companies/c-emew/corporate/`. This validates matching workflow with real data in Week 1.
-
----
-
-## ADR-2054 — Project & Market Data Management in Dual-Corpus Architecture
-
-**Status**: Approved
-**Date**: 2025-11-12
-**Scope**: Grant Prototype (back/grant-prototype/)
-**Related ADRs**: ADR-2051 (Dual-Corpus Architecture), ADR-2052 (Input Data Management)
-
-### Context
-
-Grant applications require detailed information about:
-1. **The Project**: Specific initiative being funded (e.g., "Battery Recycling Expansion Project")
-2. **The Market**: Industry context, market size, competitive landscape, regulatory environment
-
-Current dual-corpus architecture (ADR-2051) has:
-- **Company Corpus**: Corporate documents (business plans, financials, capabilities)
-- **Grant Corpus**: Grant guidelines, eligibility criteria, application forms
-
-**Questions**:
-- Where should project-specific documents be stored?
-- Where should market research documents be stored?
-- How to maintain confidentiality for project data (competitive advantage)?
-- How to enable multi-company platform without data leakage?
-
-### Options Considered
-
-#### Project Data Storage
-
-**Option A: Company Corpus** ✅ SELECTED
-```python
-# Store project documents with company_id + project_id
-manager.company_corpus.upload_document(
-    "battery-recycling-expansion-project-plan.pdf",
-    company_id="emew",
-    metadata={
-        "document_type": "project",
-        "project_id": "battery-recycling-expansion",
-        "year": 2025
-    }
-)
-```
-- Pros: Maintains confidentiality, filtered by company_id, enables project-specific queries
-- Cons: Company Corpus becomes mixed-purpose (corporate + project)
-
-**Option B: Separate Project Corpus**
-- Create third corpus: Project Corpus
-- Pros: Clean separation
-- Cons: Added complexity, more corpora to manage, cost overhead
-
-#### Market Data Storage
-
-**Option A: Grant Corpus** ✅ SELECTED (Phase 1)
-```python
-# Store market research with industry + geography tags
-manager.grant_corpus.upload_document(
-    "battery-recycling-market-australia-2024.pdf",
-    metadata={
-        "document_type": "market",
-        "industry": "battery-recycling",
-        "geography": "australia",
-        "year": 2024
-    }
-)
-```
-- Pros: Simple, market data helps grant matching, non-confidential
-- Cons: Grant Corpus becomes mixed-purpose
-
-**Option B: Separate Market Corpus** (Consider Phase 2)
-- Create third corpus: Market Corpus
-- Pros: Clean separation, easier market data updates
-- Cons: More complexity, justified only if market data volume grows large
-
-### Decision
-
-**Project Data**: Store in **Company Corpus** with metadata tagging
-**Market Data**: Store in **Grant Corpus** (Phase 1), migrate to separate Market Corpus if volume justifies it (Phase 2)
-
-### Metadata Schema
-
-#### Company Corpus Metadata Structure
-```python
-# Corporate documents
-{
-    "company_id": "emew",
-    "document_type": "corporate",
-    "category": "business_plan | financial_report | capabilities | certificates"
-}
-
-# Project-specific documents (NEW)
-{
-    "company_id": "emew",
-    "document_type": "project",
-    "project_id": "battery-recycling-expansion",
-    "project_name": "EMEW Battery Recycling Expansion",
-    "industry": "battery-recycling",
-    "project_stage": "planning | execution | complete",
-    "year": 2025
-}
-```
-
-#### Grant Corpus Metadata Structure
-```python
-# Grant documents
-{
-    "grant_id": "igp-2025",
-    "jurisdiction": "federal",
-    "document_type": "grant",
-    "funding_min": 100000,
-    "funding_max": 5000000,
-    "deadline_date": "2026-03-31"
-}
-
-# Market research documents (NEW)
-{
-    "document_type": "market",
-    "industry": "battery-recycling | renewable-energy | manufacturing",
-    "geography": "australia | vic | nsw | qld",
-    "market_segment": "recycling | energy-storage | automotive",
-    "year": 2024,
-    "report_type": "market_size | competitive_analysis | regulatory | trends"
-}
-```
-
-### Query Examples
-
-#### Project-Specific Queries
-```python
-# Query for project details
-result = manager.query_company(
-    "emew",
-    "What is the timeline for the battery recycling expansion project?"
-)
-
-# Query project with filter
-result = manager.company_corpus.query(
-    "What are the key milestones and budget for the expansion?",
-    metadata_filter="company_id=emew AND document_type=project AND project_id=battery-recycling-expansion"
-)
-```
-
-#### Market Data Queries
-```python
-# Query market context for grant matching
-result = manager.query_grants(
-    "What is the market size for battery recycling in Australia?",
-    metadata_filter="document_type=market AND industry=battery-recycling AND geography=australia"
-)
-
-# Query for application population
-result = manager.grant_corpus.query(
-    "Describe the competitive landscape and key players in battery recycling.",
-    metadata_filter="document_type=market AND industry=battery-recycling"
-)
-```
-
-### Multi-Tenancy & Data Segregation
-
-**CRITICAL**: Company Corpus contains confidential project data from multiple companies.
-
-**Security Model** (enforced at application layer):
-```python
-# Backend API enforces company_id matching authenticated user
-def query_company_documents(user: User, query: str, filters: dict = None):
-    if not user.authenticated:
-        raise Unauthorized()
-
-    # ALWAYS enforce company_id filter - never allow user override
-    base_filter = f"company_id={user.company_id}"
-
-    # Merge user filters (if provided)
-    if filters:
-        user_filter = " AND ".join(f"{k}={v}" for k, v in filters.items())
-        metadata_filter = f"{base_filter} AND {user_filter}"
-    else:
-        metadata_filter = base_filter
-
-    # Audit log all queries
-    audit_log.record({
-        "user_id": user.id,
-        "company_id": user.company_id,
-        "query": query,
-        "filters": metadata_filter,
-        "timestamp": datetime.now()
-    })
-
-    return manager.company_corpus.query(query, metadata_filter=metadata_filter)
-```
-
-**Audit Trail** (required for multi-company platform):
-```sql
-CREATE TABLE corpus_query_audit (
-    id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL,
-    company_id TEXT NOT NULL,
-    corpus TEXT NOT NULL,  -- 'company', 'grant', 'market'
-    query TEXT NOT NULL,
-    metadata_filter TEXT,
-    timestamp TIMESTAMP DEFAULT NOW(),
-    results_count INTEGER
-);
-```
-
-### Consequences
-
-**Pros**:
-- ✅ Project data maintained confidentially within Company Corpus
-- ✅ Market data accessible across all companies (non-competitive)
-- ✅ Metadata filtering enables precise queries
-- ✅ Application-layer security prevents cross-company leakage
-- ✅ Audit logging tracks all corpus access
-- ✅ Scalable to multi-company platform
-
-**Cons / Risks**:
-- ⚠️ Depends on correct metadata tagging (mitigated: validation in upload functions)
-- ⚠️ Security relies on application layer (mitigated: forced filtering + audit logging)
-- ⚠️ Grant Corpus becomes mixed-purpose (acceptable: market data is public/non-confidential)
-
-**Deferred to Phase 2**:
-- Separate Market Corpus (only if volume justifies)
-- Row-level security in PostgreSQL (see GitHub Issue #7)
-- Real-time audit dashboard
-
-### Compliance / Verification
-
-**Evidence Files**:
-- `.inputs/companies/c-emew/project/battery-recycling-expansion/` - Project documents
-- `.inputs/grants/market-research/` - Market data (shared across companies)
-- `back/grant-prototype/gemini_store/company_corpus.py` - Enforced metadata tagging
-
-**Verification**:
-- Week 1: Project documents tagged with company_id + project_id
-- Week 3: AI population queries project data successfully
-- Phase 2: Multi-company audit shows no cross-company queries
-
-**AI Agent Guidance**: When uploading company documents, always tag with `company_id`. For project-specific docs, add `document_type=project` and `project_id=<unique-id>`. Market research should be tagged with `document_type=market`, `industry`, and `geography`. Enforce metadata filtering on all Company Corpus queries using authenticated user's company_id. Never allow cross-company data access.
 
 ---

@@ -12,8 +12,8 @@ precise semantic search without company data contamination.
 
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 
 
 class GrantCorpus:
@@ -63,7 +63,7 @@ class GrantCorpus:
                 break
 
         if existing_store and force_recreate:
-            print(f"🗑️  Deleting existing Grant Corpus: {existing_store.name}")
+            print(f"[DELETE]  Deleting existing Grant Corpus: {existing_store.name}")
             self.client.file_search_stores.delete(
                 name=existing_store.name,
                 config={'force': True}
@@ -71,12 +71,12 @@ class GrantCorpus:
             existing_store = None
 
         if existing_store:
-            print(f"✅ Using existing Grant Corpus: {existing_store.name}")
+            print(f"[OK] Using existing Grant Corpus: {existing_store.name}")
             self.store_name = existing_store.name
             return existing_store.name
 
         # Create new store
-        print(f"🆕 Creating new Grant Corpus: {display_name}")
+        print(f"[NEW] Creating new Grant Corpus: {display_name}")
         file_search_store = self.client.file_search_stores.create(
             config={'display_name': display_name}
         )
@@ -119,7 +119,7 @@ class GrantCorpus:
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
 
-        print(f"📤 Uploading {file_path.name} to Grant Corpus...")
+        print(f"[UPLOAD] Uploading {file_path.name} to Grant Corpus...")
 
         # Prepare custom metadata
         custom_metadata = []
@@ -153,11 +153,11 @@ class GrantCorpus:
         )
 
         # Wait for processing to complete
-        print(f"⏳ Processing {file_path.name}...")
+        print(f"[WAIT] Processing {file_path.name}...")
         # Note: The operation is async, but for simplicity we return immediately
         # In production, you might want to poll operation.status
 
-        print(f"✅ Uploaded: {file_path.name}")
+        print(f"[OK] Uploaded: {file_path.name}")
         return file_path.name
 
     def query(
@@ -222,7 +222,7 @@ class GrantCorpus:
         # This is a placeholder for when that functionality is available
         # For now, we can only track uploads manually
 
-        print("⚠️  Document listing not yet fully supported by Gemini File Search API")
+        print("[WARN]  Document listing not yet fully supported by Gemini File Search API")
         print("    Track uploaded documents via metadata or external tracking")
 
         return documents

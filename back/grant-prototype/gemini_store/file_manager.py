@@ -8,7 +8,7 @@ provides batch operations and utility functions.
 
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-import google.generativeai as genai
+from google import genai
 
 
 class FileManager:
@@ -63,10 +63,10 @@ class FileManager:
 
         files = list(directory.glob(file_pattern))
         if not files:
-            print(f"⚠️  No files matching '{file_pattern}' in {directory}")
+            print(f"[WARN]  No files matching '{file_pattern}' in {directory}")
             return []
 
-        print(f"📂 Batch uploading {len(files)} files from {directory}")
+        print(f"[FOLDER] Batch uploading {len(files)} files from {directory}")
 
         uploaded = []
         for file_path in files:
@@ -80,13 +80,13 @@ class FileManager:
 
                 # Upload using the corpus upload method
                 # (In practice, you'd call grant_corpus.upload_document here)
-                print(f"  ✅ Would upload: {file_path.name}")
+                print(f"  [OK] Would upload: {file_path.name}")
                 uploaded.append(file_path.name)
 
             except Exception as e:
                 print(f"  ❌ Failed to upload {file_path.name}: {e}")
 
-        print(f"✅ Batch upload complete: {len(uploaded)}/{len(files)} succeeded")
+        print(f"[OK] Batch upload complete: {len(uploaded)}/{len(files)} succeeded")
         return uploaded
 
     def batch_upload_company_docs(
@@ -125,10 +125,10 @@ class FileManager:
 
         files = list(directory.glob(file_pattern))
         if not files:
-            print(f"⚠️  No files matching '{file_pattern}' in {directory}")
+            print(f"[WARN]  No files matching '{file_pattern}' in {directory}")
             return []
 
-        print(f"📂 Batch uploading {len(files)} company documents ({company_id})")
+        print(f"[FOLDER] Batch uploading {len(files)} company documents ({company_id})")
 
         uploaded = []
         for file_path in files:
@@ -148,13 +148,13 @@ class FileManager:
 
                 # Upload using the corpus upload method
                 # (In practice, you'd call company_corpus.upload_document here)
-                print(f"  ✅ Would upload: {file_path.name} (type: {doc_type})")
+                print(f"  [OK] Would upload: {file_path.name} (type: {doc_type})")
                 uploaded.append(file_path.name)
 
             except Exception as e:
                 print(f"  ❌ Failed to upload {file_path.name}: {e}")
 
-        print(f"✅ Batch upload complete: {len(uploaded)}/{len(files)} succeeded")
+        print(f"[OK] Batch upload complete: {len(uploaded)}/{len(files)} succeeded")
         return uploaded
 
     def get_upload_statistics(self, store_name: str) -> Dict[str, Any]:

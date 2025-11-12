@@ -12,7 +12,6 @@
 
 | Program | Deadline | Action | Funding Range | Priority |
 | ----- | ----- | ----- | ----- | ----- |
-| **Victorian Market Accelerator** | **Nov 5, 2025** (7 days\!) | Submit application | $15K-$50K | 🔴 URGENT | EXPIRED
 | **Battery Breakthrough Initiative** | Rolling (until $500M exhausted) | Contact ARENA \+ EOI | $2M-$200M | 🔴 HIGH |
 | **Industry Growth Program** | Open continuous | Engage Advisory Service | $100K-$5M | 🔴 HIGH |
 | **Breakthrough Victoria Fund** | Open ongoing | Submit pitch deck | $1M-$25M+ | 🟡 MEDIUM |
@@ -69,8 +68,7 @@ PROGRAM                          │ OCT│ NOV│ DEC│ JAN│ FEB│ MAR│ A
 
 🔴 URGENT - APPLY NOW
 ────────────────────────────────────────────────────────────────────────────────────
-Victorian Market Accelerator     │ ██ │    │    │    │    │    │    │    │    │
-  └─ Deadline: Nov 5 ───────────►│ ▼  │    │    │    │    │    │    │    │    │
+
 
 Battery Breakthrough Initiative  │████│████│████│████│████│████│████│████│████│████████
   • Contact ARENA ──────────────►│ ●  │    │    │    │    │    │    │    │    │
@@ -197,24 +195,6 @@ KEY DEPENDENCIES:
 ---
 
 ## **📋 ACTIONABLE WEEKLY BREAKDOWN**
-
-### **WEEK 1: Oct 29 \- Nov 5, 2025**
-
-#### **Monday Oct 29 (TODAY)**
-
-* \[ \] Email batterybreakthrough@arena.gov.au (BBI inquiry)  
-* \[ \] Start IGP Advisory Service request via business.gov.au  
-* \[ \] Begin Victorian Market Accelerator application
-
-#### **Tuesday Oct 30 \- Thursday Nov 4**
-
-* \[ \] Complete Victorian Market Accelerator application  
-* \[ \] Schedule IGP Advisory Service consultation  
-* \[ \] Draft BTV pitch deck outline
-
-#### **Friday Nov 5 (DEADLINE DAY)**
-
-* \[ \] **Submit Victorian Market Accelerator by 11:59 PM** ⚠️
 
 ---
 

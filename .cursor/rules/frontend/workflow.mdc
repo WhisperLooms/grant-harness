@@ -61,7 +61,7 @@ When frontend development begins, this file should document:
 
 - **Frontend ADRs**: `.cursor/rules/frontend/ADR.mdc` - Architectural decisions (to be added)
 - **Frontend Folder Structure**: `.cursor/rules/frontend/folder-structure.mdc` - Directory organization (to be updated)
-- **Template Agent**: `front/realtime-conversational-agent/` - Google ADK sample for reference
+- **Template Agent**: `to-be-determined` - We need to identify a good template that provides completion of a form
 - **Main Development Guide**: `CLAUDE.md` - Repository-wide guidance
 
 ## Next Steps
