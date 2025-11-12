@@ -1,0 +1,345 @@
+---
+description: EMEW Agents Repository Structure
+alwaysApply: false
+---
+
+# EMEW Agents - Repository Folder Structure
+
+This document provides an overview of the top-level directory structure for the EMEW Agents project. For detailed structure of specific subsystems, see:
+- Backend: [backend/folder-structure.mdc](backend/folder-structure.mdc) - `back/knowledge-adk/` agent
+- Frontend: [frontend/folder-structure.mdc](frontend/folder-structure.mdc) - `front/` templates
+
+---
+
+## Root Directory Structure
+
+```
+emew-agents/
+├── .claude/               # Claude Code AI configuration
+├── .cursor/               # Cursor AI IDE configuration
+├── .docs/                 # Project documentation
+├── .git/                  # Git repository data
+├── .gitignore             # Git ignore rules
+├── .playwright-mcp/       # Playwright MCP server data
+├── .specstory/            # Spec tracking (optional)
+├── adk-samples/           # Google ADK sample agents (reference)
+├── back/                  # Backend agents
+│   ├── RAG/               # RAG agent (✅ Operational)
+│   └── llm-auditor/       # LLM auditor agent (📋 Template)
+├── front/                 # Frontend agents
+│   └── realtime-conversational-agent/  # Real-time agent (📋 Template)
+├── CLAUDE.md              # Main development guide for AI agents
+└── README.md              # Human-readable project overview
+```
+
+---
+
+## Directory Purposes
+
+### `.claude/` - Claude Code AI Configuration
+
+**Purpose**: Configuration for Claude Code AI development assistant
+
+**Status**: Active (used during initial setup)
+
+**Key Contents**:
+- Command configurations
+- Agent prompts
+- Todo tracking
+
+**Conventions**:
+- Commands: Markdown files for custom Claude Code commands
+- Agents: Specialized AI agent definitions
+
+---
+
+### `.cursor/` - Cursor AI IDE Configuration
+
+**Purpose**: Cursor-compatible documentation automatically loaded by Cursor AI
+
+**Status**: ✅ MASTER documentation system
+
+**Key Subdirectories**:
+- `rules/` - Auto-loaded documentation for AI context
+  - `ADR.mdc` - Platform architectural decisions (ADR-0001 to ADR-0003)
+  - `folder-structure.mdc` - This file
+  - `backend/` - Backend RAG agent documentation
+    - `ADR.mdc` - Backend ADRs (ADR-2001 to ADR-2005)
+    - `workflow.mdc` - Development workflow for RAG agent
+    - `folder-structure.mdc` - Backend directory structure
+  - `frontend/` - Frontend documentation (placeholder)
+    - `ADR.mdc` - Frontend ADRs (ADR-1001 placeholder)
+    - `workflow.mdc` - Frontend workflow (placeholder)
+    - `folder-structure.mdc` - Frontend directory structure (placeholder)
+
+**Conventions**:
+- Format: `.mdc` files (Cursor native, Markdown compatible)
+- Protocol: ADR_AGENT_PROTOCOL v1.0 for all ADR files
+- Auto-loaded: Cursor reads all `.mdc` files on startup
+- Claude Code: References via `CLAUDE.md` navigation
+
+**Related Documentation**: [.cursor/rules/README.md](.cursor/rules/README.md)
+
+---
+
+### `.docs/` - Project Documentation
+
+**Purpose**: Centralized documentation repository (specifications, screenshots)
+
+**Status**: Active
+
+**Key Subdirectories**:
+- `prompts/` - Development prompts and instructions
+  - `251106_initiating-prompt.md` - Initial setup prompt
+- `screenshots/` - Documentation screenshots for evidence
+  - Browser automation screenshots from testing
+  - Configuration validation screenshots
+
+**Conventions**:
+- Prompts: Date-prefixed markdown files (YYMMDD format)
+- Screenshots: Descriptive names with timestamps
+
+---
+
+### `.git/` - Git Repository Data
+
+**Purpose**: Version control metadata
+
+**Status**: Active (initialized 2025-11-06)
+
+**Remote**: `github.com/WhisperLooms/emew-agents`
+
+---
+
+### `.gitignore` - Git Ignore Rules
+
+**Purpose**: Specify files to exclude from version control
+
+**Key Exclusions**:
+- `.env` files (sensitive credentials)
+- `.venv/` directories (virtual environments)
+- `__pycache__/` (Python bytecode)
+- `.pytest_cache/` (test artifacts)
+- `.playwright-mcp/` (Playwright data)
+
+---
+
+### `.playwright-mcp/` - Playwright MCP Server
+
+**Purpose**: Playwright Model Context Protocol server data
+
+**Usage**: Browser automation for testing and screenshots
+
+**Status**: Active during development
+
+---
+
+### `adk-samples/` - Google ADK Sample Agents
+
+**Purpose**: Reference implementations from Google ADK samples repository
+
+**Status**: Reference only (not part of EMEW implementation)
+
+**Contents**: Various Google ADK agent templates and examples
+
+**Usage**: Source of template agents (llm-auditor, realtime-conversational-agent)
+
+---
+
+### `back/` - Backend Agents
+
+**Purpose**: Backend AI agents built with Google ADK
+
+**Status**: ✅ MASTER - Contains operational RAG agent
+
+**Key Subdirectories**:
+- `RAG/` - RAG agent for EMEW documentation Q&A (✅ Operational)
+- `llm-auditor/` - Template agent for content review (📋 Not configured)
+
+**Architecture**: Multi-agent monorepo with independent dependencies per agent
+
+**Related ADR**: [ADR-0002 - Multi-Agent Repository Structure](#adr-0002)
+
+**Documentation**: [backend/folder-structure.mdc](backend/folder-structure.mdc)
+
+---
+
+### `back/knowledge-adk/` - RAG Agent (OPERATIONAL)
+
+**Purpose**: Retrieval-Augmented Generation agent for EMEW technical documentation
+
+**Status**: ✅ Operational and tested
+
+**Key Components**:
+- `rag/` - Agent implementation module
+  - `agent.py` - ADK Agent with VertexAiRagRetrieval tool
+  - `prompts.py` - System instructions and citation format
+  - `shared_libraries/` - Corpus management utilities
+- `eval/` - ADK evaluation framework
+- `tests/` - Pytest test suite
+- `deployment/` - Vertex AI Agent Engine deployment scripts
+- `.env` - Environment configuration (see ADR-2003)
+- `pyproject.toml` - uv-managed dependencies (see ADR-2004)
+- `uv.lock` - Dependency lockfile (541KB)
+- `.venv/` - Virtual environment
+
+**Performance**:
+- Query latency: 2-3 seconds (retrieval + generation)
+- LLM: Gemini 2.5 Flash (see ADR-2005)
+- RAG corpus: Vertex AI RAG Engine (see ADR-2001)
+
+**Related ADRs**:
+- ADR-2001: RAG Agent Architecture
+- ADR-2003: Project ID Configuration
+- ADR-2004: Python + uv Package Management
+- ADR-2005: Gemini 2.5 Flash LLM Selection
+
+**Documentation**: [back/knowledge-adk/README.md](../back/knowledge-adk/README.md)
+
+---
+
+### `back/llm-auditor/` - LLM Auditor Agent (TEMPLATE)
+
+**Purpose**: Template agent for critic/reviser pattern (from Google ADK samples)
+
+**Status**: 📋 Template not configured for EMEW
+
+**Future Use**: Potential content review and quality improvement agent
+
+---
+
+### `front/` - Frontend Agents
+
+**Purpose**: Frontend AI agents for user-facing interactions
+
+**Status**: 📋 Templates only, not yet configured
+
+**Key Subdirectories**:
+- `realtime-conversational-agent/` - WebSocket-based chat interface (📋 Template)
+
+**Future Development**: Real-time conversational interface for EMEW knowledge access
+
+**Related ADR**: [ADR-1001 - Frontend Not Yet Implemented](#adr-1001)
+
+**Documentation**: [frontend/folder-structure.mdc](frontend/folder-structure.mdc)
+
+---
+
+### `front/realtime-conversational-agent/` - Real-Time Agent (TEMPLATE)
+
+**Purpose**: Template agent for real-time WebSocket conversations (from Google ADK samples)
+
+**Status**: 📋 Template not configured for EMEW
+
+**Future Use**: Browser-based conversational interface integrated with backend RAG agent
+
+---
+
+## Root-Level Files
+
+### `CLAUDE.md` - Primary Developer Guide
+
+**Purpose**: Entry point for all AI agents (Claude Code, Cursor AI)
+
+**Status**: ✅ MASTER development guide
+
+**Key Sections**:
+- Project Overview
+- Technology Stack
+- Development Commands
+- Critical Configuration
+- Agent Architecture
+- Common Tasks
+- Known Issues & Solutions
+- Testing Strategy
+- Performance Considerations
+
+**For AI Agents**: Always read `CLAUDE.md` first for project orientation
+
+**Last Updated**: 2025-11-07
+
+---
+
+### `README.md` - Project Overview
+
+**Purpose**: Human-readable project introduction
+
+**Audience**: Developers, stakeholders, new team members
+
+**Status**: To be created (currently using CLAUDE.md as primary)
+
+---
+
+## File Naming Conventions
+
+### General Rules
+- **Markdown**: `.md` extension for documentation
+- **Cursor Rules**: `.mdc` extension for AI-loaded context
+- **Python**: `.py` extension
+- **Config**: `.env`, `.toml`, `.lock` as appropriate
+
+### Python Modules
+- **Modules**: snake_case (e.g., `prepare_corpus_and_data.py`)
+- **Classes**: PascalCase (not heavily used in RAG agent)
+- **Functions**: snake_case (e.g., `return_instructions_root()`)
+
+### Documentation Naming
+- **Specs**: kebab-case (e.g., `folder-structure.mdc`)
+- **Prompts**: Date-prefixed (e.g., `251106_initiating-prompt.md`)
+- **ADRs**: Embedded in ADR.mdc files with 4-digit IDs (ADR-0001)
+
+---
+
+## Development Commands
+
+### Backend (RAG Agent)
+```bash
+# Setup
+cd back/knowledge-adk
+uv sync                                         # Install dependencies
+gcloud auth application-default login           # Authenticate
+
+# Development
+.venv/Scripts/python.exe -m google.adk.cli web  # Start ADK Web UI (Windows)
+uv run adk web                                  # Start ADK Web UI (cross-platform)
+
+# Testing
+uv run pytest tests/ -v                         # Run tests
+
+# Deployment
+cd deployment
+uv run python deploy.py                         # Deploy to Vertex AI
+```
+
+### Frontend
+No commands yet - frontend not implemented.
+
+---
+
+## Related Documentation
+
+- **Main Guide**: [CLAUDE.md](../CLAUDE.md) - Primary entry point for AI agents
+- **Platform ADRs**: [.cursor/rules/ADR.mdc](.cursor/rules/ADR.mdc) - Platform decisions
+- **Backend**:
+  - ADRs: [.cursor/rules/backend/ADR.mdc](.cursor/rules/backend/ADR.mdc)
+  - Workflow: [.cursor/rules/backend/workflow.mdc](.cursor/rules/backend/workflow.mdc)
+  - Structure: [.cursor/rules/backend/folder-structure.mdc](.cursor/rules/backend/folder-structure.mdc)
+- **Frontend**:
+  - ADRs: [.cursor/rules/frontend/ADR.mdc](.cursor/rules/frontend/ADR.mdc)
+  - Workflow: [.cursor/rules/frontend/workflow.mdc](.cursor/rules/frontend/workflow.mdc)
+  - Structure: [.cursor/rules/frontend/folder-structure.mdc](.cursor/rules/frontend/folder-structure.mdc)
+
+---
+
+## Agent Status Summary
+
+| Agent | Location | Status | Purpose |
+|-------|----------|--------|---------|
+| RAG Agent | `back/knowledge-adk/` | ✅ Operational | EMEW documentation Q&A with citations |
+| LLM Auditor | `back/llm-auditor/` | 📋 Template | Content review (not configured) |
+| Real-Time Chat | `front/realtime-conversational-agent/` | 📋 Template | Conversational interface (not configured) |
+
+---
+
+**For comprehensive backend navigation**: See [backend/folder-structure.mdc](backend/folder-structure.mdc)
+**For comprehensive frontend navigation**: See [frontend/folder-structure.mdc](frontend/folder-structure.mdc)

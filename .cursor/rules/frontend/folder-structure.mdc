@@ -1,0 +1,197 @@
+---
+alwaysApply: false
+---
+
+# Frontend Folder Structure
+
+## Status
+
+**Frontend development begins Week 2 (Days 8-12)** per ADR-0003 (Application-First Prototype Strategy).
+
+## Planned Structure (Week 2-4 Implementation)
+
+The grant-portal Next.js application will be organized as follows:
+
+```
+front/grant-portal/                              # Next.js 14+ App Router
+├── app/                                         # Next.js app directory
+│   ├── layout.tsx                               # Root layout
+│   ├── page.tsx                                 # Home page
+│   ├── applications/                            # Application management
+│   │   ├── [grantId]/                          # Dynamic grant application
+│   │   │   ├── page.tsx                        # Application form page
+│   │   │   ├── loading.tsx                     # Loading state
+│   │   │   └── error.tsx                       # Error boundary
+│   │   └── layout.tsx                          # Applications layout
+│   ├── review/                                  # Collaboration & review
+│   │   └── [applicationId]/
+│   │       └── page.tsx                        # Review workflow UI
+│   ├── dashboard/                               # Consultant dashboard (Phase 2)
+│   │   └── page.tsx                            # Multi-client view
+│   └── api/                                     # API routes
+│       └── applications/
+│           └── [id]/
+│               └── export/
+│                   └── route.ts                 # PDF export endpoint
+├── components/                                  # React components
+│   ├── forms/                                   # Form components
+│   │   ├── DynamicForm.tsx                     # Schema-driven form renderer
+│   │   ├── DynamicField.tsx                    # Field type router
+│   │   ├── MultiStepForm.tsx                   # Multi-step wrapper
+│   │   ├── StepIndicator.tsx                   # Progress indicator
+│   │   ├── StepNavigation.tsx                  # Previous/Next buttons
+│   │   └── AIFieldAssist.tsx                   # Inline AI suggestions
+│   ├── collaboration/                           # Collaboration features
+│   │   ├── CommentThread.tsx                   # Field-level comments
+│   │   ├── ReviewPanel.tsx                     # Review status panel
+│   │   └── SignoffTracker.tsx                  # Approval workflow
+│   ├── documents/                               # Document management
+│   │   ├── DocumentLibrary.tsx                 # Document list
+│   │   ├── DocumentUpload.tsx                  # File upload
+│   │   └── DocumentCard.tsx                    # Document preview
+│   └── ui/                                      # Shadcn UI components
+│       ├── button.tsx                          # From shadcn/ui
+│       ├── input.tsx
+│       ├── form.tsx
+│       ├── select.tsx
+│       ├── textarea.tsx
+│       └── ... (30+ shadcn components)
+├── lib/                                         # Utility functions
+│   ├── schemas/                                 # Grant-specific schemas
+│   │   ├── igp.ts                              # Industry Growth Program
+│   │   ├── bbi.ts                              # Battery Breakthrough Initiative
+│   │   └── vma.ts                              # Victorian Market Accelerator
+│   ├── contexts/                                # React contexts
+│   │   └── FormContext.tsx                     # Form state management
+│   ├── supabase/                                # Supabase integration (Week 3)
+│   │   ├── client.ts                           # Supabase client
+│   │   ├── schema.sql                          # Database schema
+│   │   └── migrations/                         # DB migrations
+│   ├── pdf/                                     # PDF generation
+│   │   └── templates/
+│   │       └── GrantApplicationPDF.tsx         # react-pdf template
+│   ├── api.ts                                   # Python backend API client
+│   └── utils.ts                                 # Shared utilities
+├── hooks/                                       # Custom React hooks
+│   ├── useApplicationSync.ts                    # Supabase real-time sync
+│   ├── useFormPersistence.ts                   # LocalStorage save/resume
+│   └── useAIPopulation.ts                      # AI form population
+├── public/                                      # Static assets
+│   └── images/
+├── styles/                                      # Global styles
+│   └── globals.css                             # Tailwind CSS
+├── package.json                                 # Dependencies
+├── tsconfig.json                                # TypeScript config
+├── tailwind.config.ts                           # Tailwind config
+├── next.config.js                               # Next.js config
+└── .env.local                                   # Environment variables
+```
+
+## Key Architectural Patterns
+
+### 1. Schema-Driven Forms (ADR-1002)
+
+Each grant gets a TypeScript schema defining its form structure:
+
+```typescript
+// lib/schemas/igp.ts
+export const industryGrowthProgramSchema = {
+  grant_id: "igp-2025",
+  grant_name: "Industry Growth Program",
+  steps: [
+    {
+      id: "eligibility",
+      name: "Eligibility Check",
+      fields: [
+        {
+          id: "abn",
+          type: "text",
+          label: "Australian Business Number (ABN)",
+          required: true,
+          validation: { pattern: /^\d{11}$/ }
+        },
+        // ... more fields
+      ]
+    },
+    // ... more steps
+  ]
+}
+```
+
+### 2. Multi-Step State Management (ADR-1003)
+
+React Context API handles form state across steps:
+
+```typescript
+// lib/contexts/FormContext.tsx
+const FormContext = createContext({
+  formData: {},
+  currentStep: 0,
+  setFormData: () => {},
+  nextStep: () => {},
+  prevStep: () => {},
+})
+```
+
+### 3. Component Patterns
+
+**DynamicForm** renders any grant form from schema:
+```tsx
+<DynamicForm schema={grantSchema} onSubmit={handleSubmit} />
+```
+
+**AIFieldAssist** provides inline AI suggestions:
+```tsx
+<AIFieldAssist fieldId="project_description" onRegenerate={handleRegenerate} />
+```
+
+## Dependencies (Week 2 Setup)
+
+```json
+{
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-hook-form": "^7.5.0",
+    "@hookform/resolvers": "^3.0.0",
+    "zod": "^3.22.0",
+    "@radix-ui/react-*": "latest",  // Shadcn UI dependencies
+    "@supabase/supabase-js": "^2.38.0",  // Week 3
+    "@react-pdf/renderer": "^3.1.0",  // Week 4
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.0.0"
+  }
+}
+```
+
+##Installation (Week 2 Day 1)
+
+```bash
+# Create Next.js app
+npx create-next-app@latest grant-portal --typescript --tailwind --app
+
+# Install Shadcn UI
+npx shadcn-ui@latest init
+
+# Install form dependencies
+npm install react-hook-form @hookform/resolvers zod
+
+# Install Shadcn components
+npx shadcn-ui@latest add form input textarea select button
+```
+
+## Foundation Template
+
+**Base template**: Clone patterns from `shadcn-nextjs-multistep-form-example`
+**Reference**: https://github.com/63r6o/shadcn-nextjs-multistep-form-example
+
+## Related Documentation
+
+- **Frontend ADRs**: [ADR.mdc](ADR.mdc) - All frontend architectural decisions (ADR-1001 through ADR-1005)
+- **Platform ADRs**: [../ADR.mdc](../ADR.mdc) - Platform-wide decisions including ADR-0003 (Application-First Strategy)
+- **Backend Prototype**: [../backend/grant-prototype/ADR.mdc](../backend/grant-prototype/ADR.mdc) - Backend decisions
+- **Platform Structure**: [../folder-structure.mdc](../folder-structure.mdc) - Full repository structure
+
+---
+
+**AI Agent Guidance**: Frontend development begins Week 2 (Day 8). Follow ADR-1001 (React Hook Form + Shadcn UI), ADR-1002 (Schema-Driven Forms), and ADR-1003 (Context API state management). Clone `shadcn-nextjs-multistep-form-example` template as starting point. Install all Shadcn UI components via CLI. Create grant schemas in `lib/schemas/{grant-id}.ts`. Week 3 adds Supabase (ADR-1004). Week 4 adds PDF export (ADR-1005).

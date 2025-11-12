@@ -139,9 +139,21 @@
       "mcp__Claude_brave-search__brave_web_search",
       "Bash(find:*)",
       "Bash(gh issue create:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "mcp__Claude_github-WhisperLooms__list_issues"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "Claude_FIREBASE_WhisperLooms",
+    "Claude_sequential-thinking",
+    "Claude_browser-tools-MCP",
+    "Claude_brave-search",
+    "Claude_github-WhisperLooms",
+    "Claude_Playwright",
+    "chrome-devtools",
+    "claude_shadcn"
+  ]
 }

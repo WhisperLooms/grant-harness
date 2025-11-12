@@ -1,0 +1,78 @@
+---
+globs: front/**
+alwaysApply: false
+---
+
+# Frontend Development Workflow
+
+## Status
+
+**Frontend is not yet implemented.**
+
+[To be completed] 
+
+This workflow file will be updated when frontend development begins.
+
+## Planned Architecture
+
+When frontend implementation starts, it will likely follow these patterns:
+
+**Core Pattern**: [To be completed] 
+
+**Expected Tech Stack**:
+- Nextjs
+- HTML/CSS/JavaScript (or React/Vue framework)
+- WebSocket for real-time communication
+- Integration with backend RAG agent via API
+- Browser-based chat interface
+
+## Future Workflow
+
+When frontend development begins, this file should document:
+
+1. **Architecture Principles**
+   - Real-time communication patterns
+   - UI framework selection rationale
+   - Integration with backend RAG agent
+
+2. **Development Rules**
+   - Code organization standards
+   - Component structure
+   - API integration patterns
+
+3. **Testing Strategy**
+   - Unit tests for UI components
+   - Integration tests with backend
+   - End-to-end user journey tests
+
+4. **Common Patterns**
+   - WebSocket connection management
+   - Message streaming handling
+   - Error handling and retry logic
+   - Citation display in UI
+
+5. **Development Commands**
+   - Local development server
+   - Build process
+   - Testing commands
+   - Deployment process
+
+## Related Documentation
+
+- **Frontend ADRs**: `.cursor/rules/frontend/ADR.mdc` - Architectural decisions (to be added)
+- **Frontend Folder Structure**: `.cursor/rules/frontend/folder-structure.mdc` - Directory organization (to be updated)
+- **Template Agent**: `front/realtime-conversational-agent/` - Google ADK sample for reference
+- **Main Development Guide**: `CLAUDE.md` - Repository-wide guidance
+
+## Next Steps
+
+Before implementing frontend:
+1. Complete backend RAG agent testing and deployment
+2. Define frontend requirements and user flows
+3. Evaluate template agent for grant-harness use case fit
+4. Select UI framework (if needed beyond vanilla JS)
+5. Design real-time communication architecture
+
+---
+
+**AI Agent Guidance**: Frontend is not yet implemented. When starting frontend development, update this workflow file with actual development patterns following the structure suggested above. Refer to backend workflow (`.cursor/rules/backend/workflow.mdc`) as a template for comprehensive workflow documentation.

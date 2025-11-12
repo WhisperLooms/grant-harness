@@ -16,7 +16,54 @@ For comprehensive details:
 - **Initiation Plan**: `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` - Complete Week 0-4 development roadmap
 - **Grant Sources**: `.docs/research/Australian Government Grant Sources.md` - 50+ grant sources documented
 - **Project Structure**: `.cursor/rules/folder-structure.mdc` - Repository organization
-- **Architecture**: `.cursor/rules/platform/ADR.mdc` - Platform-level architectural decisions
+- **Architecture**: `.cursor/rules/ADR.mdc` - Platform-level architectural decisions
+
+## CRITICAL: Application Assistance > Grant Discovery
+
+**Strategic Priority** (per ADR-0003): The primary value proposition is **helping clients safely and efficiently complete grant applications with expert input**, not just finding grants.
+
+### Core Requirements
+1. **Accurate replica application forms** - NextJS forms matching government portals
+2. **AI-populated with highly relevant information** - Query company docs for field answers
+3. **Client control throughout** - Expert review and approval workflow
+4. **Significantly easier than manual** - Target: <2 hours vs 10+ hours manual
+
+### Phase 1 Focus (Weeks 1-4)
+- **Week 1**: Ingest EMEW data, match to grants, select 2 target grants
+- **Week 2**: Replicate 2 grant forms in NextJS (schema-driven dynamic generation)
+- **Week 3**: AI population (70% auto-fill target) + expert review workflow
+- **Week 4**: Collaboration (multi-stakeholder signoff) + PDF export
+
+### What's Deferred to Phase 2
+- Full scraper automation (50+ sources)
+- Multi-company dashboard
+- Advanced matching features
+- Production-scale infrastructure
+
+**Key Insight**: Grant matching is a means to an end. The real value is reducing application completion time from 10+ hours to <2 hours while maintaining quality and control.
+
+## Existing Context: EMEW Bootstrap Strategy
+
+**IMPORTANT** (per ADR-2053): We have existing research that accelerates Week 1 development:
+
+### EMEW Corporate Documents
+**Location**: `.docs/context/emew-context/corporate-info/*.pdf`
+**Contents**: Existing EMEW corporate PDFs (business plans, capabilities, etc.)
+**Usage**: Migrate to `.inputs/companies/c-emew/corporate/` → Upload to Gemini Company Corpus
+
+### Grant Search Results
+**Location**: `.docs/context/emew-context/grant-search/Grants_Summary_2025-10-29.md`
+**Contents**: Comprehensive grant research with 8-10 high-priority grants already identified
+**Grants**: BBI, IGP, VMA, BTV, ARP, International Partnerships Critical Minerals
+**Usage**: Parse grant list → Download PDFs → Upload to Gemini Grant Corpus
+
+### Quick Win Workflow (Week 1)
+Instead of building scrapers from scratch:
+1. **Day 1-2**: Migrate EMEW docs to `.inputs/`, upload to Gemini Company Corpus
+2. **Day 3-4**: Parse grant summary, download 8-10 grant PDFs, upload to Gemini Grant Corpus
+3. **Day 5**: Run matching, validate results, select 2 target grants for Week 2
+
+This validates the matching workflow with real data before investing in scraper development.
 
 ## Development Approach: Prototype First
 
@@ -24,12 +71,12 @@ This project follows a **phased development pattern**:
 
 ### Phase 1: Python Prototype (Weeks 0-4)
 1. Build in `back/grant-prototype/` directory
-2. Implement scrapers for 4 sources (GrantConnect, VIC, NSW, QLD)
-3. Upload grants to Gemini File API
-4. Test matching with EMEW case study
-5. Output to JSON for stakeholder review
+2. **Week 1**: Ingest existing EMEW docs + grant research (bootstrap approach)
+3. **Week 2**: Build NextJS forms for 2 selected grants (schema-driven)
+4. **Week 3**: AI population + expert review workflow
+5. **Week 4**: Collaboration + PDF export + stakeholder demo
 
-**Current**: Week 0 - Foundation Setup
+**Current**: Week 0 - Foundation Setup & Documentation (Days 1-2)
 
 ### Phase 2: MVP with Basic UI (Weeks 5-8)
 1. Refactor prototype into production ADK agents in `back/grant-adk/`
@@ -63,6 +110,47 @@ See `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` for detailed roadm
 - `.cursor/rules/**/*.mdc` - Architecture documentation
 - `.claude/commands/**/*.md` - Claude slash commands
 
+### IMPORTANT: Input Data Management Pattern (ADR-2052)
+
+**Managed Input Data** (git-ignored):
+```
+back/grant-prototype/.inputs/        # Active working data (NOT tracked in git)
+├── companies/
+│   └── c-{company-id}/              # Per-company folder (e.g., c-emew)
+│       ├── corporate/               # Corporate documents (PDFs)
+│       ├── profile/                 # Generated profiles (JSON)
+│       └── vector-db/               # Gemini upload metadata
+└── grants/
+    └── {jurisdiction}/              # By jurisdiction
+        └── {grant-name}/            # Per-grant folder
+            ├── guidelines.pdf
+            ├── metadata.json
+            └── vector-db/
+```
+
+**Static Reference Data** (tracked in git):
+```
+.docs/context/                       # Historical/reference data (tracked in git)
+├── emew-context/                    # EMEW case study materials
+│   ├── corporate-info/              # Source PDFs (migrate to .inputs/ for processing)
+│   └── grant-search/                # Grant research results
+└── test-companies/                  # Test profiles
+```
+
+**When to use which**:
+- **Use `.inputs/`**: For active data processing, Gemini uploads, generated outputs
+- **Use `.docs/context/`**: For static reference, documentation, research materials
+
+**Setup** (Week 1 Day 1):
+```bash
+cd back/grant-prototype
+mkdir -p .inputs/companies/c-emew/{corporate,profile,vector-db}
+mkdir -p .inputs/grants/{federal,state-vic,state-nsw,state-qld}
+
+# Add to .gitignore
+echo "back/grant-prototype/.inputs/" >> .gitignore
+```
+
 ### Mandatory Reading Before Coding
 
 **BEFORE writing any code, read the appropriate workflow**:
@@ -72,7 +160,7 @@ See `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` for detailed roadm
 | `back/grant-prototype/` | `.cursor/rules/backend/grant-prototype/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
 | `back/grant-adk/` (future) | `.cursor/rules/backend/ADR.mdc` | `.cursor/rules/backend/workflow.mdc` |
 | `front/grant-portal/` (future) | `.cursor/rules/frontend/ADR.mdc` | `.cursor/rules/frontend/workflow.mdc` |
-| Platform/Testing | `.cursor/rules/platform/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
+| Platform/Testing | `.cursor/rules/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
 
 ## Key Commands
 
@@ -413,7 +501,7 @@ git commit -m ".docs(adr): add ADR-0001 Gemini File Search decision"
 
 **Platform/Cross-Cutting**:
 - **Repository Structure**: `.cursor/rules/folder-structure.mdc` - Full repo navigation
-- **Platform ADRs**: `.cursor/rules/platform/ADR.mdc` - Platform-wide decisions
+- **Platform ADRs**: `.cursor/rules/ADR.mdc` - Platform-wide decisions
 - **Development Rules**: `.cursor/rules/rules.mdc` - Full development guidelines
 
 ### Architectural Decision Records (ADRs)
@@ -427,18 +515,27 @@ All ADRs follow **ADR_AGENT_PROTOCOL v1.0** format. See emew-agents `.cursor/rul
 - **2050-2099**: Grant prototype (tactical decisions)
 - **2100-2499**: Grant ADK (production agents)
 
-**Platform ADRs** - `.cursor/rules/platform/ADR.mdc`:
-- ADR-0001: Repository Structure Decision (to be created)
-- ADR-0002: Gemini File Search vs Self-Hosted Vector DB (to be created)
-- ADR-0003: Scrapy Framework for Web Scraping (to be created)
+**Platform ADRs** - `.cursor/rules/ADR.mdc`:
+- ADR-0001: Monorepo Structure Decision (includes `.inputs/` folder pattern)
+- ADR-0002: Gemini File Search for Vector Storage
+- ADR-0003: Application-First Prototype Strategy (Week 2-4 focus on forms/AI/collaboration)
 
 **Backend Infrastructure ADRs** - `.cursor/rules/backend/ADR.mdc`:
 - ADR-2001: Python + uv Package Management (to be created)
 - ADR-2002: Pydantic for Data Validation (to be created)
 
 **Grant Prototype ADRs** - `.cursor/rules/backend/grant-prototype/ADR.mdc`:
-- ADR-2051: Phase 1 Scraper Architecture (to be created)
-- ADR-2052: Gemini API vs Vertex AI for Prototype (to be created)
+- ADR-2050: crawl4ai for AI-Powered Web Scraping
+- ADR-2051: Gemini Dual-Corpus Architecture (separate Grant + Company corpora)
+- ADR-2052: Input Data Management Pattern (`.inputs/` folder structure)
+- ADR-2053: EMEW Bootstrap Strategy (leverage existing docs/research)
+
+**Frontend ADRs** - `.cursor/rules/frontend/ADR.mdc`:
+- ADR-1001: React Hook Form + Shadcn UI Foundation
+- ADR-1002: Schema-Driven Form Generation (JSON schema → NextJS form)
+- ADR-1003: Multi-Step Form State Management (Context API → Supabase)
+- ADR-1004: Collaboration Backend Decision (Supabase proposed, Week 3)
+- ADR-1005: PDF Export Strategy (react-pdf for government-matching format)
 
 ### When to Create New ADRs
 
@@ -485,14 +582,16 @@ See `.cursor/rules/rules.mdc` section "Architecture Decision Records (ADR) Proto
 
 ### Success Metrics
 
-**Phase 1 (Prototype)**:
-- Successfully match 10 test companies to grants with 80%+ relevance
-- Scrape and index 50+ grants from 4 sources
+**Phase 1 (Prototype)** - Application-First Focus:
+- **Week 1**: EMEW docs + 8-10 grants in Gemini, matching validates manual research (BBI + IGP as top 2)
+- **Week 2**: 2 NextJS forms replicating government portals (IGP + BBI/VMA)
+- **Week 3**: 70% of form fields auto-populated with EMEW data
+- **Week 4**: **<2 hour application completion vs 10+ hours manual** (time savings demonstrated)
 
 **Phase 2 (MVP)**:
 - 50 companies using platform
 - 100+ grant applications generated
-- <5 second query latency
+- Multi-company dashboard with 5-10 simultaneous clients
 
 **Phase 3 (Scale)**:
 - 500+ companies
@@ -501,7 +600,8 @@ See `.cursor/rules/rules.mdc` section "Architecture Decision Records (ADR) Proto
 
 ---
 
-**Last Updated**: 2025-11-11
-**Current Phase**: Week 0 - Foundation Setup (Days 1-5)
-**Next Milestone**: Week 1 - First Working Scraper
-**Status**: Repository initialization in progress
+**Last Updated**: 2025-11-12
+**Current Phase**: Week 0 - Phase 0 Documentation Complete (Days 1-2)
+**Next Milestone**: Week 1 - EMEW Bootstrap & Grant Matching
+**Status**: Documentation updated, ready for Week 1 implementation
+**Key Deliverables Complete**: ADR-0003 (Application-First), ADR-2051-2053 (Backend), ADR-1001-1005 (Frontend)

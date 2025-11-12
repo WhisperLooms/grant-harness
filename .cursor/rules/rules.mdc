@@ -1,0 +1,316 @@
+---
+description: Full-stack development rules for Next.js + Python/FastAPI with Google ADK integration
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.py"
+  - "src/**/*"
+  - "app/**/*"
+alwaysApply: true
+---
+These guidelines steer Cursor AI (and any AI‑assisted development) to keep the codebase stable, consistent, and well‑tested.
+
+## 🔄 Project Awareness & Context
+1. **Specifications.** Read the key project documentation set out in `.docs\specs\*` to understand the project.
+
+## 🧠 AI Behavior Rules
+1. **Ask Don't Assume**: If any requirement is ambiguous, ask for clarification
+2. **Verify First**: Check file/package existence before writing code
+3. **No Hallucinations**: Only use installed packages (check package.json/requirements.txt)
+4. **Complete Implementations**: Every function must be production-ready
+5. **Preserve Existing Code**: Never delete code unless task explicitly requires it
+6. **Reference Specs**: Link every implementation to `.docs/specs/` section
+7. **Think Before Coding**: For complex tasks, outline approach first
+8. **Multi-Perspective Analysis**: Consider security, performance, maintainability
+9. **Rollback Safety**: Test changes don't break existing functionality
+
+## 🧱 Code Structure & Modularity
+1. **Files ≤ 500 lines.** When a file grows beyond ~400 lines, refactor into smaller modules.  
+2. **Group by feature/responsibility.** E.g. all product‑page logic in `src/app/product/`, all database helpers in `src/lib/`.  
+3. **Consistent imports.** Prefer `@/lib/foo` or `../../../components/Button`—never mix.
+
+##  ⌨️Development Environment / Command Prompts
+1. **Write commands for a Windows environment using Command Prompt, PowerShell, or Git Bash.
+
+## 🧪 Testing & Reliability
+1. **Tests results live in `.docs\test_results`** at the repo root.  
+2. **Frameworks:**  
+   - Frontend: Jest + React Testing Library  
+   - Backend: Pytest  
+3. **After any logic change**, update or add tests immediately.  
+4. **Enforce in CI:** tests must pass and coverage cannot drop below the agreed threshold (e.g. 80%).
+
+## ✅ Task Completion
+1. **Mark tasks done in `.docs/specs/tasks.md`** as soon as you finish them.  
+2. **Agreed changes to the plan** where the user has expressly agreed to change the plan, update the `.docs/specs/tasks.md` to reflect the change.
+
+## ✅ Task Management
+
+1. **Dual-Source System**:
+   - **GitHub Issues** - Single source of truth for active development
+   - **`.docs/specs/tasks.md`** - Strategic roadmap and long-term planning
+   
+2. **Task Lifecycle**:
+   - User creates GitHub Issue with acceptance criteria
+   - Link issue in tasks.md for strategic context
+   - Create feature branch: `feature/{issue-number}-{description}`
+   - Complete work, update tests, mark task done
+   - Create PR linking to issue: `Fixes #XX`
+   - Merge after review, issue auto-closes
+
+3. **Task Completion Checklist**:
+   - [ ] All acceptance criteria met
+   - [ ] Tests written and passing
+   - [ ] Documentation updated
+   - [ ] Task marked `[x]` in `.docs/specs/tasks.md`
+   - [ ] ADR created if architectural decision
+   - [ ] PR created and linked to issue
+
+## 📝 Git Workflow & Version Control
+
+### Branch Strategy
+1. **Branch Naming Convention**:
+   - Features: `feature/github-issue-number-short-description` (e.g., `feature/42-oauth-login`)
+   - Bugfixes: `bugfix/github-issue-number-short-description` (e.g., `bugfix/89-null-profile`)
+   - Hotfixes: `hotfix/critical-issue-description` (e.g., `hotfix/security-patch`)
+   - Experiments: `experiment/description` (archived after decision)
+
+2. **Commit Message Format** (Conventional Commits):
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+   **Examples**:
+   - `feat(auth): add Google OAuth integration`
+   - `fix(api): handle null user profile response`
+   - `docs(readme): update Firebase setup instructions`
+   - `test(lobby): add unit tests for game state transitions`
+
+3. **Pull Request Requirements**:
+   - Link to GitHub Issue (closes #XX)
+   - All tests passing (frontend + backend)
+   - No linting errors
+   - Coverage maintained or improved
+   - Task marked complete in `.docs/specs/tasks.md`
+   - ADR created if architectural change (see ADR Protocol)
+
+4. **Commit Scope**:
+   - One logical change per commit
+   - Each commit should build and pass tests
+   - Squash WIP commits before PR
+
+5. **Never Commit**:
+   - `node_modules/`, `__pycache__/`, `.venv/`, `venv/`
+   - `.env`, `.env.local`, `.env.*.local` files
+   - IDE configs (`.vscode/`, `.idea/`, `.cursor/`)
+   - Build artifacts (`dist/`, `build/`, `.next/`, `out/`)
+   - Test results in `.docs/test_results/` (should be gitignored)
+
+## 📐 Architecture Decision Records (ADR) Protocol
+
+**When to Create an ADR**:
+- Any architectural change affecting >1 module
+- Technology stack additions/changes
+- Security/performance pattern decisions
+- Database schema changes
+- API design decisions
+
+**ADR Numbering Convention**:
+- **Platform/Cross-cutting**: ADR-0001 to ADR-0999
+- **Frontend**: ADR-1000 to ADR-1999  
+- **Backend**: ADR-2000 to ADR-9999
+
+**File Location**: `.docs/decisions/ADR-{number}.md`
+
+**Required Format**:
+```markdown
+**ADR-{number}:** {Title}Status: [Proposed | Accepted | Deprecated | Superseded by ADR-XXXX]
+**Date:** YYYY-MM-DD
+**Context:** What problem are we solving?
+**Decision:** What did we decide?
+**Consequences:** What are the trade-offs?
+**Alternatives Considered:** What else did we evaluate?
+```
+
+**Enforcement**:
+- All ADRs must be referenced in code comments for key architectural components
+- Update index in `.cursor/rules/ADR.mdc` or similar aggregation file
+
+**Number Range Convention**:
+- **0001-0999**: Platform-level decisions
+- **1000-1999**: Frontend-specific decisions
+- **2000-2049**: Backend infrastructure (shared patterns)
+- **2050-2099**: Grant prototype (tactical decisions)
+- **2100-2499**: Grant ADK (production agents)
+
+**Platform ADRs** - `.cursor/rules/ADR.mdc`:
+- ADR-0001: Repository Structure Decision (to be created)
+- ADR-0002: Gemini File Search vs Self-Hosted Vector DB (to be created)
+- ADR-0003: Scrapy Framework for Web Scraping (to be created)
+
+**Backend Infrastructure ADRs** - `.cursor/rules/backend/ADR.mdc`:
+- ADR-2001: Python + uv Package Management (to be created)
+- ADR-2002: Pydantic for Data Validation (to be created)
+
+**Grant Prototype ADRs** - `.cursor/rules/backend/grant-prototype/ADR.mdc`:
+- ADR-2051: Phase 1 Scraper Architecture (to be created)
+- ADR-2052: Gemini API vs Vertex AI for Prototype (to be created)
+
+## 🤖 Prototype vs Production (ADK) Development Pattern
+
+### Folder Structure
+```
+back/
+├── {agent}-prototype/     # Claude slash commands, rapid iteration
+├── {agent}-adk/          # Production ADK multi-agent systems
+```
+
+**Prototype Folders** (`back/{agent}-prototype/`):
+- Claude slash commands for manual execution
+- Python utility scripts
+- Rapid iteration and experimentation
+- CSV/JSON file outputs (.gitignored)
+- pytest unit tests for individual functions
+
+**Production Folders** (`back/{agent}-adk/`):
+- Production ADK agents with multi-agent orchestration
+- FastAPI tool endpoints
+- Vertex AI Agent Engine deployment
+- Cloud Firestore/database integration
+- Comprehensive ADK evaluation framework
+
+### Development Flow
+
+**Phase 1-2: Prototype First**
+1. Build in `-prototype/` folder
+2. Test with Claude slash commands (`.claude/commands/`)
+3. Validate with manual execution (Gordon runs commands)
+4. Output to CSV for stakeholder review (Alex)
+5. Iterate based on feedback
+
+**Phase 3: Production ADK Second**
+1. Use Spec-Kit (https://github.com/github/spec-kit) for specification
+2. Create `spec.yaml` incorporating prototype learnings
+3. Refactor proven prototype code into ADK tools
+4. Add multi-agent orchestration layer
+5. Deploy to Vertex AI Agent Engine
+
+### Code Reuse Pattern
+
+ADK tools can import from prototype modules:
+
+```python
+# back/marketing-adk/tools/scrape_exhibitors_tool.py
+from google.adk.tools import Tool
+import sys
+sys.path.append('../../')
+
+# Import from prototype
+from marketing_prototype.scrapers.conference import scrape_exhibitors
+
+async def scrape_exhibitors_tool(event_url: str) -> List[dict]:
+    """ADK tool wrapping prototype scraper"""
+    companies = scrape_exhibitors(event_url)
+    return [c.dict() for c in companies]
+
+tool = Tool(
+    name='scrape_exhibitors',
+    description='Extract exhibitors from conference website',
+    function=scrape_exhibitors_tool
+)
+```
+
+### Testing Requirements
+
+**Prototype Testing**:
+- pytest unit tests for each module
+- Test with real data (conferences, SerpAPI)
+- Manual validation of CSV outputs
+
+**ADK Testing**:
+- pytest unit tests + integration tests
+- ADK evaluation framework (`eval/conversation.test.json`)
+- Pass criteria: >80% tool trajectory score
+- End-to-end tests with deployed agent
+
+### ADR Management
+
+**Prototype ADRs** (Document tactical decisions):
+- Location: `.cursor/rules/backend/{agent}-prototype/ADR.mdc`
+- Examples: API selection, scraping strategies, scoring algorithms
+
+**Production ADRs** (Document architectural decisions):
+- Location: `.cursor/rules/backend/{agent}-adk/ADR.mdc`
+- Examples: Multi-agent design, deployment strategy, database selection
+
+### Migration Path
+
+Prototype code serves as "library" for ADK implementation:
+1. Validate approach in prototype
+2. Extract reusable functions to prototype modules
+3. Import in ADK tools (avoid duplication)
+4. Prototype folder remains for future experimentation
+
+## 📎 Style & Conventions
+### Python / SQL
+1. **Python (FastAPI) code** follows PEP8, uses type hints, and is formatted with `black`.  
+2. **Data validation** via `pydantic`.  
+3. **ORM**: SQLAlchemy or SQLModel as appropriate.  
+4. **Docstrings:** Google style for every function/class:
+   ```python
+   def foo(bar: int) -> str:
+       """
+       Brief summary.
+
+       Args:
+           bar (int): Description.
+
+       Returns:
+           str: Description.
+       """
+       ...
+5. **ADK:** Always use ADK as basis of agentic framework (unless explicitly requested by user), eg: initial testing using simple python scripts and Claude slash commands or agents.
+
+### JavaScript/TypeScript
+1. **ESLint & Prettier**
+• Use ESLint with a standard style guide (e.g. Airbnb’s or a custom Next.js/TypeScript set) to maintain consistency.
+• Enforce code formatting via Prettier and integrate it with your version control hooks (Husky/lint-staged).
+2. **Code Organisation**
+• Adopt consistent import ordering (e.g. external libraries before internal modules, grouped logically).
+• Use consistent file extensions (prefer .tsx for components, .ts for util functions) and modularise code effectively.
+• Configuration files (e.g. .eslintrc.json, .prettierrc) must live in the project root to ensure global consistency.
+3. **TypeScript Specifics**
+• Ensure all exported components, functions, and variables have explicit type annotations.
+• Follow naming conventions: use PascalCase for React components, camelCase for variables and functions, and UPPER_SNAKE_CASE for constants.
+4. **Commenting & Documentation**
+• Use JSDoc style comments for complex functions or business logic to ensure the codebase is explainable.
+• Maintain clear README sections for module usage.
+
+## **Asset Handling**
+1. **Asset Location & Management**
+• Before handling or generating any asset (images, static files, etc.), the developer confirm the target location is consistent with PLANNING.md.
+• If uncertainty arises on where an asset should be placed  – for example, determining between /public/images/ vs. another directory – request clarification from User before proceeding.
+• For new asset generation (e.g. via image creation tools or syncing scripts), first request permission to generate or modify assets. Then, place into location consistent with `.docs\specs\*` or requeset clarification. 
+2. **Integration with Sync Process**
+• Once developed, ensure that any automated asset pipeline (like the sync-assets.js script) logs the origin and destination of assets.
+• Include a check in the CI/CD process to verify that asset paths match those specified in the `.docs\specs\*` and asset handling rules.
+
+## 📚 Documentation & Explainability
+1. Update README.md for any new setup steps, dependencies, or features.
+2. Comment non‑obvious code. For complex logic, add # Reason: explaining why you did it.
+3. Link to spec: If you add a new API route, reference the PRD/SRS section it implements.
+
+## 👓 Use MCP Servers
+1. Always seek to utilise available MCP Servers to complete tasks.
+
+## 🚫 Anti-Patterns (NEVER DO THIS)
+1. **No placeholder code** - No `// TODO`, `# FIXME`, or stub implementations
+2. **No incomplete functions** - Every function must have complete logic, not "you would implement this part"
+3. **No console.log/print debugging** - Use proper logging (winston/loguru)
+4. **No hardcoded values** - Use environment variables or config files
+5. **No generic error catching** - Catch specific exceptions with proper handling
+6. **No mixed promise patterns** - Use async/await consistently, not mixing with .then()5. 
+
+## 🎯 Context & Memory Management (CRITICAL FOR AGENTS)
+1. **File Selection**: Max 5 files per task to prevent context overflow
+2. **Incremental Changes**: Break large features into <300 line changesets
+3. **State Preservation**: Document current state in `.docs/state/current.md`
+4. **Decision Log**: Record architectural decisions in `.docs/decisions/ADR-{number}.md`
+5. **Multi-Step Tasks**: Create subtasks in `.claude\scratchpads\`, complete sequentially

@@ -1,0 +1,74 @@
+---
+globs: back/grant-prototype/**
+alwaysApply: false
+---
+
+# Backend Grant Agent Development Workflow
+
+## Architecture
+
+This project uses Claude commands, python agents and Google's Gemini File Serach Tool Search to build a RAG (Retrieval-Augmented Generation) agent capable of matching company with grant and completing an application.
+
+**Core Pattern**: Claude Commands + Gemini AI Search + ... [to be completed]
+
+**Data Flow**: Scrape all grants → User input Company Data → Match to a grant → Scrape details of grant → Create grant application → Populate and collaborate on application → Sign off application 
+
+## Testing
+
+You must always start from tests. We primarily use ADK's built-in evaluation framework (`adk web`) for testing agent behavior. For example, testing RAG functionality: query submission → retrieval tool usage → response quality → citation accuracy.
+
+**Important**: We test real agent behavior through ADK Web UI with actual Vertex AI operations. Tests validate complete RAG pathways: tool decision making, document retrieval, and response generation. Never create useless unit tests that just test properties of the class. Instead, test the actual functionality through ADK agent execution.
+
+**Testing Framework**:
+[To be completed]
+
+## Development Principles
+
+All code must be clearly readable and maintainable. It must read like a story. Everything should be self-explanatory. You should not need tons of comments to understand what it does. The key idea is to make sure I can understand what the code does in 5 seconds. If I can't, you should refactor the code. Below is a list of principles that you must follow to achieve this:
+
+- **No broken windows**: Keep code clean from the start. Don't leave anything for later.
+- **DRY**: Don't repeat yourself. If you are about to write the same code twice, stop, reconsider your approach and refactor.
+- **Leave it better than you found it**: Improve bad code as you encounter it. Your code should clearly communicate its purpose.
+- **Write code once**: Don't repeat yourself. Make code modular and extract components when needed. Prefer types over obvious comments.
+- **Test First**: Do not deploy any functionality until it has been fully tested through ADK Web UI.
+- **SOLID**: Follow SOLID principles. Write single purpose short self-contained functions.
+- **ASCII-Only Enforcement**: NO Unicode characters (emojis, symbols) in Python files - follow ADR-2002.
+
+## Development Rules
+
+Below are the rules that you must follow when developing agent functionality:
+
+[to be completed]
+
+## Workflow
+
+When building new features, you must always start from testing. Follow the workflow below:
+
+0. Before starting, create a to-do list for yourself, following this exact process.
+1. Test new functionality via ADK Web UI (`adk web`) with representative queries.
+   - If you cannot formulate test queries, ask clarification from the user.
+   - If it's a new feature, create test queries in `eval/evalsets/` directory.
+2. Implement new functionality following our single agent + RAG tool architecture.
+3. Run the affected tests using ADK Web GUI or pytest suite.
+4. Keep iterating until all tests are passing. Do not stop until all tests are passing.
+5. Document any key architecture decisions in `.cursor/rules/backend/ADR.mdc` file following ADR_AGENT_PROTOCOL format.
+6. Update relevant README files if tool signatures or configuration changed.
+7. Verify ASCII-only compliance across all modified Python files.
+
+## Common Patterns
+
+### Updating System Prompt
+
+[To be completed]
+
+## Documentation References
+
+- **Gemini File Search Tool**: https://blog.google/technology/developers/file-search-gemini-api/ 
+- **ADK Official Docs**: https://cloud.google.com/vertex-ai/generative-ai/docs/agent-builder
+- **Vertex RAG Engine**: https://cloud.google.com/vertex-ai/generative-ai/docs/rag-overview
+- **Project README**: `back/knowledge-adk/README.md`
+- **Architecture Decisions**: `.cursor/rules/backend/ADR.mdc`
+- **Repository Structure**: `.cursor/rules/backend/folder-structure.mdc`
+- **Main Development Guide**: `CLAUDE.md`
+
+This workflow ensures high-quality, maintainable RAG agent development with comprehensive testing and strict adherence to established architectural patterns.

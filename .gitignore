@@ -66,6 +66,7 @@ dmypy.json
 **/.env
 **/.env.local
 **/.env.*.local
+.mcp.json
 
 # Logs
 *.log
@@ -84,6 +85,9 @@ temp/
 # Output files
 back/grant-prototype/output/
 back/grant-prototype/scraped_data/
+
+# Input data (managed working data, not tracked)
+back/grant-prototype/.inputs/
 
 # Google Cloud credentials (NEVER commit)
 **/credentials.json

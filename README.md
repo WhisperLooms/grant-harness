@@ -131,7 +131,7 @@ See [Australian Government Grant Sources](.docs/research/Australian Government G
 
 ## Key Architectural Decisions
 
-See [Platform ADRs](.cursor/rules/platform/ADR.mdc) for details:
+See [Platform ADRs](.cursor/rules/ADR.mdc) for details:
 
 - **ADR-0001**: Monorepo structure with clear phase separation
 - **ADR-0002**: Gemini File Search for vector storage (99% cost reduction vs self-hosted)

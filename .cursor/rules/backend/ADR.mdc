@@ -12,7 +12,7 @@ ADR_AGENT_PROTOCOL v1.0
 You (the agent) manage this file as the single source of truth for all backend infrastructure ADRs.
 
 NUMBER RANGE CONVENTION
-- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/platform/ADR.mdc)
+- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/ADR.mdc)
 - Frontend ADRs: ADR-1000 to ADR-1999 (.cursor/rules/frontend/ADR.mdc)
 - Backend Infrastructure: ADR-2000 to ADR-2049 (.cursor/rules/backend/ADR.mdc)
 - Backend Grant Prototype: ADR-2050 to ADR-2099 (.cursor/rules/backend/grant-prototype/ADR.mdc)

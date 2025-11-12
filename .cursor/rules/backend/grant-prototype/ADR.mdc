@@ -12,7 +12,7 @@ ADR_AGENT_PROTOCOL v1.0
 You (the agent) manage this file as the single source of truth for all Grant Prototype tactical ADRs.
 
 NUMBER RANGE CONVENTION
-- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/platform/ADR.mdc)
+- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/ADR.mdc)
 - Frontend ADRs: ADR-1000 to ADR-1999 (.cursor/rules/frontend/ADR.mdc)
 - Backend Infrastructure: ADR-2000 to ADR-2049 (.cursor/rules/backend/ADR.mdc)
 - Backend Grant Prototype: ADR-2050 to ADR-2099 (.cursor/rules/backend/grant-prototype/ADR.mdc)
@@ -66,7 +66,10 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
-| 2050 | [crawl4ai for AI-Powered Web Scraping](#adr-2050)         | 2025-11-12 | Accepted |            |               |
+| 2053 | [EMEW Bootstrap Strategy](#adr-2053)                      | 2025-11-12 | Accepted | —          | —             |
+| 2052 | [Input Data Management Pattern](#adr-2052)                | 2025-11-12 | Accepted | —          | —             |
+| 2051 | [Gemini Dual-Corpus Architecture](#adr-2051)              | 2025-11-12 | Accepted | —          | —             |
+| 2050 | [crawl4ai for AI-Powered Web Scraping](#adr-2050)         | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
 
@@ -174,5 +177,273 @@ Changes from original plan:
 - Added: `crawl4ai>=0.2.0`, `aiohttp>=3.9.0`, `playwright>=1.40.0`
 - Scraper modules use async patterns instead of Scrapy's event-driven architecture
 - `.env` updated with `CRAWL4AI_MODEL=gemini-1.5-pro` configuration
+
+---
+
+## ADR-2051 — Gemini Dual-Corpus Architecture
+
+<a id="adr-2051"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Grant matching requires semantic search across two distinct knowledge domains: (1) Grant documents (guidelines, eligibility criteria, application requirements) and (2) Company profiles (business descriptions, capabilities, financials, project plans). Original plan used single Gemini corpus for all documents, but this creates semantic search challenges - queries like "battery recycling company" would match both grant descriptions AND company descriptions, reducing precision.
+
+### Alternatives
+
+* **Single unified corpus**: All grants + company docs in one Gemini RAG corpus
+  - Pros: Simpler architecture, single query endpoint
+  - Cons: Semantic search confusion (grants match company queries and vice versa), harder to isolate grant-specific vs company-specific queries
+
+* **Dual corpora (chosen)**: Separate RAG corpora for grants vs companies
+  - Pros: Precise semantic search (grant queries only search grants), easier to tune retrieval per domain, supports company-to-company comparisons
+  - Cons: Two upload/query workflows, slightly more complex
+
+* **Traditional database + vector embeddings**: PostgreSQL for structured data + pgvector for semantic search
+  - Pros: Full control, queryable structured fields
+  - Cons: Infrastructure overhead, manual embedding pipeline, not aligned with ADR-0002 (Gemini File Search)
+
+### Decision
+
+Implement **dual-corpus architecture** with separate Gemini RAG corpora for grants and companies:
+
+**Grant Corpus** (`grant-harness-grants-corpus`):
+- All grant PDFs, application forms, guidelines
+- Metadata: jurisdiction, agency, sector tags, funding range
+- Queried for: "Which grants fund battery recycling?", "Show manufacturing grants in Victoria"
+
+**Company Corpus** (`grant-harness-companies-corpus`):
+- Corporate documents (business plans, financials, technical specs)
+- Website scrape data
+- Metadata: company ID, industry, state, annual revenue
+- Queried for: "What are EMEW's core capabilities?", "Extract EMEW's revenue from business plan"
+
+**Matching workflow**:
+1. Query Grant Corpus with company-derived search terms ("battery recycling", "Victoria", "manufacturing")
+2. Retrieve top 20 grants
+3. For each grant, query Company Corpus to extract evidence of fit
+4. Rank grants by relevance using retrieved evidence
+
+### Consequences
+
+* **Pros**:
+  - Higher precision semantic search (queries only match relevant domain)
+  - Supports iterative querying (e.g., "Get more details on grant X" stays in grant corpus)
+  - Company corpus enables AI population (query "EMEW revenue" returns business plan excerpt)
+  - Scales to multiple companies (each company gets sub-corpus or documents tagged with company_id)
+  - Natural separation for access control (future: clients only see their company corpus)
+
+* **Cons / risks**:
+  - Two upload workflows (grants via `/discover-grants`, companies via `/profile-company`)
+  - Matching logic more complex (query two corpora vs one)
+  - Corpus metadata management overhead (track which documents in which corpus)
+
+* **Supersedes**: Single-corpus initial plan (not formalized as ADR)
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `back/grant-prototype/gemini_store/corpus_manager.py` - Manages dual corpora
+- `back/grant-prototype/gemini_store/grant_corpus.py` - Grant-specific corpus logic
+- `back/grant-prototype/gemini_store/company_corpus.py` - Company-specific corpus logic
+- `back/grant-prototype/.inputs/grants/corpus-metadata.json` - Grant corpus tracking
+- `back/grant-prototype/.inputs/companies/c-emew/vector-db/corpus-metadata.json` - Company corpus tracking
+
+**Verification**:
+- Week 1: Separate grant and company corpora created in Gemini
+- Week 1: Query "battery recycling" in grant corpus returns only grants (not EMEW business plan)
+- Week 3: AI population queries company corpus for form field answers
+
+**AI Agent Guidance**: Always upload grants to grant corpus and company docs to company corpus. Never mix. Query grant corpus for matching. Query company corpus for application population. Track corpus IDs in `.inputs/` folder metadata files.
+
+---
+
+## ADR-2052 — Input Data Management Pattern
+
+<a id="adr-2052"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Phase 1 prototype requires managing two categories of data: (1) Input data (company PDFs, grant documents, scraped content) that changes frequently and (2) Reference data (test cases, research, examples) that is version-controlled. Original plan stored both in `.docs/context/`, creating confusion about what's actively managed vs static reference. EMEW case study has existing corporate PDFs and grant search results that need organized storage.
+
+### Alternatives
+
+* **All data in .docs/context/** (original):
+  - Pros: Single location, easy navigation
+  - Cons: Git bloat (large PDFs), unclear what's input vs reference, no clear company isolation
+
+* **Separate .inputs/ folder (chosen)**:
+  - Pros: Clear separation of managed inputs vs static reference, git-ignored for large files, company-specific folders, aligns with Gemini corpus structure
+  - Cons: Two data locations to remember
+
+* **External storage (S3/GCS)**:
+  - Pros: Scalable, no git concerns
+  - Cons: Overkill for prototype, adds deployment complexity
+
+### Decision
+
+Create **`.inputs/` folder in `back/grant-prototype/`** for all managed input data (NOT git tracked):
+
+```
+back/grant-prototype/
+└── .inputs/                    # Git-ignored, managed input data
+    ├── companies/
+    │   └── c-{company-id}/     # Per-company folder (e.g., c-emew)
+    │       ├── corporate/      # Corporate documents (PDFs, financials)
+    │       ├── profile/        # Generated profiles (scraped-website.json, profile.json)
+    │       └── vector-db/      # Gemini upload metadata (corpus-id.json)
+    └── grants/
+        └── {jurisdiction}/     # By jurisdiction (federal, state-vic, state-nsw, etc.)
+            └── {grant-name}/   # Per-grant folder
+                ├── guidelines.pdf
+                ├── application-form.pdf
+                ├── metadata.json
+                └── vector-db/  # Gemini upload metadata
+```
+
+**Keep `.docs/context/` for**:
+- Static reference data (test cases, research)
+- EMEW grant search results (research, not active input)
+- Example profiles (templates)
+
+**Migration plan**:
+```bash
+# Move EMEW corporate docs
+.docs/context/emew-context/corporate-info/*.pdf
+  → .inputs/companies/c-emew/corporate/
+
+# Grant search results stay in .docs (static research reference)
+# But extracted grant PDFs move to .inputs/grants/
+```
+
+### Consequences
+
+* **Pros**:
+  - Clear mental model: `.inputs/` = active managed data, `.docs/` = static reference
+  - Git-ignored by default (add `back/grant-prototype/.inputs/` to `.gitignore`)
+  - Company isolation (each company in separate folder)
+  - Mirrors Gemini corpus structure (easier to understand data flow)
+  - Scalable (add new companies without cluttering repo)
+
+* **Cons / risks**:
+  - Two data locations to track (`.inputs/` vs `.docs/context/`)
+  - Manual migration of existing EMEW data
+  - Not backed up by git (mitigated: Gemini corpus is backup)
+
+* **Supersedes**: Original `.docs/context/` everything approach
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `back/grant-prototype/.inputs/` - Folder exists and git-ignored
+- `.gitignore` - Contains `back/grant-prototype/.inputs/`
+- `back/grant-prototype/.inputs/companies/c-emew/corporate/` - EMEW PDFs migrated
+- `back/grant-prototype/.inputs/grants/federal/battery-breakthrough/` - BBI grant docs
+
+**Verification**:
+- Week 1: `.inputs/` folder created and populated
+- Week 1: EMEW corporate docs in `.inputs/companies/c-emew/corporate/`
+- Week 1: Grant PDFs in `.inputs/grants/{jurisdiction}/{grant-name}/`
+- Git status: `.inputs/` not tracked
+
+**AI Agent Guidance**: Always store active input data in `.inputs/`. Use `.docs/context/` only for static reference. Company PDFs go in `.inputs/companies/c-{id}/corporate/`. Grant PDFs go in `.inputs/grants/{jurisdiction}/{grant-name}/`. Track Gemini corpus IDs in `vector-db/corpus-metadata.json` within each folder.
+
+---
+
+## ADR-2053 — EMEW Bootstrap Strategy
+
+<a id="adr-2053"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Original Week 1 plan: Manually download 15 grant PDFs as "bootstrap" since full scraper infrastructure not yet built. EMEW case study reveals existing grant research has already been completed (comprehensive search across Gemini, Claude, ChatGPT documented in `.docs/context/emew-context/grant-search/Grants_Summary_2025-10-29.md` with 8-10 high-priority grants identified). Additionally, EMEW corporate documents (business plans, financials, technical specs) already exist in `.docs/context/emew-context/corporate-info/`. This eliminates need for "manual bootstrap" and accelerates Week 1 timeline.
+
+### Alternatives
+
+* **Manual grant download (original plan)**:
+  - Download 15 grant PDFs manually from GrantConnect + Sustainability Victoria
+  - Pros: Tests upload workflow
+  - Cons: Redundant work (grants already researched), delays matching validation
+
+* **Use existing EMEW research (chosen)**:
+  - Parse `Grants_Summary_2025-10-29.md` to extract grant list
+  - Download grant PDFs for identified opportunities (BBI, IGP, VMA, BTV, ARP, etc.)
+  - Ingest existing EMEW corporate PDFs
+  - Pros: Leverages completed research, faster Week 1, tests real data
+  - Cons: None (existing data is comprehensive)
+
+* **Build scrapers first**:
+  - Implement full scraping before using existing research
+  - Pros: More automated
+  - Cons: 2-3 weeks of work before validation, contradicts ADR-0003 (Application-First)
+
+### Decision
+
+**Week 1 approach: Leverage existing EMEW context**:
+
+**Day 1-2: Ingest EMEW Corporate Docs**
+1. Migrate `.docs/context/emew-context/corporate-info/*.pdf` → `.inputs/companies/c-emew/corporate/`
+2. Upload to Gemini Company Corpus
+3. Scrape https://emew.com.au for additional context
+4. Generate `emew_profile.json` combining corporate docs + website
+
+**Day 3-4: Ingest Grant Research Results**
+1. Parse `Grants_Summary_2025-10-29.md` for grant list (8-10 grants)
+2. Download grant PDFs from identified URLs:
+   - Battery Breakthrough Initiative: https://arena.gov.au/funding/battery-breakthrough-initiative/
+   - Industry Growth Program: https://business.gov.au/grants-and-programs/industry-growth-program
+   - Victorian Market Accelerator: https://www.sustainability.vic.gov.au/grants
+   - Breakthrough Victoria Fund: https://www.breakthroughvictoria.com/
+   - Advancing Renewables Program: https://arena.gov.au/funding/advancing-renewables-program/
+3. Store in `.inputs/grants/{jurisdiction}/{grant-name}/`
+4. Upload to Gemini Grant Corpus
+
+**Day 5: Match & Validate**
+1. Run semantic matching: EMEW Company Corpus ↔ Grant Corpus
+2. Verify matches align with manual research in `Grants_Summary_2025-10-29.md`
+3. Select 2 target grants for Week 2 application work
+
+**Skip**:
+- Manual grant download (research already complete)
+- Building scrapers (deferred to Phase 2 per ADR-0003)
+
+### Consequences
+
+* **Pros**:
+  - Accelerates Week 1 (existing research = no rediscovery)
+  - Validates matching with real client data (not synthetic test data)
+  - EMEW corporate docs more comprehensive than website scrape alone
+  - Grant selection benefits from existing priority ranking (urgent vs medium priority)
+  - Tests full workflow with production-quality inputs
+
+* **Cons / risks**:
+  - Dependent on existing research quality (mitigated: comprehensive multi-LLM search)
+  - Grant URLs may be outdated (mitigated: verify links during download)
+  - No scraper code written in Week 1 (acceptable per ADR-0003: scrapers deferred to Phase 2)
+
+* **Supersedes**: Manual grant bootstrap plan (original Week 1 approach)
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `.inputs/companies/c-emew/corporate/` - EMEW PDFs migrated from .docs/context/
+- `.inputs/grants/federal/battery-breakthrough/` - BBI grant docs downloaded
+- `.inputs/grants/state-vic/victorian-market-accelerator/` - VMA grant docs
+- `emew_matches.csv` - Matching results align with `Grants_Summary_2025-10-29.md` priorities
+
+**Verification**:
+- Day 2: EMEW corporate docs uploaded to Gemini Company Corpus
+- Day 4: 8-10 grants from summary document uploaded to Gemini Grant Corpus
+- Day 5: Matching results show BBI + IGP as top 2 matches (matches manual research priority)
+
+**AI Agent Guidance**: Use existing EMEW grant research from `.docs/context/emew-context/grant-search/` instead of manual discovery. Parse `Grants_Summary_2025-10-29.md` to extract grant URLs. Download PDFs for identified grants (BBI, IGP, VMA, BTV, ARP). Migrate EMEW corporate PDFs from `.docs/context/emew-context/corporate-info/` to `.inputs/companies/c-emew/corporate/`. This validates matching workflow with real data in Week 1.
 
 ---

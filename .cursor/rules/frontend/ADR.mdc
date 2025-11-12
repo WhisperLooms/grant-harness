@@ -12,7 +12,7 @@ ADR_AGENT_PROTOCOL v1.0
 You (the agent) manage this file as the single source of truth for all frontend ADRs.
 
 NUMBER RANGE CONVENTION
-- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/platform/ADR.mdc)
+- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/ADR.mdc)
 - Frontend ADRs: ADR-1000 to ADR-1999 (.cursor/rules/frontend/ADR.mdc)
 - Backend Infrastructure: ADR-2000 to ADR-2049 (.cursor/rules/backend/ADR.mdc)
 - Backend Grant Prototype: ADR-2050 to ADR-2099 (.cursor/rules/backend/grant-prototype/ADR.mdc)
@@ -64,7 +64,11 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
-|      |                                                            |            |          |            |               |
+| 1005 | [PDF Export Strategy](#adr-1005)                          | 2025-11-12 | Accepted | —          | —             |
+| 1004 | [Collaboration Backend Decision](#adr-1004)               | 2025-11-12 | Proposed | —          | —             |
+| 1003 | [Multi-Step Form State Management](#adr-1003)             | 2025-11-12 | Accepted | —          | —             |
+| 1002 | [Schema-Driven Form Generation](#adr-1002)                | 2025-11-12 | Accepted | —          | —             |
+| 1001 | [React Hook Form + Shadcn UI Foundation](#adr-1001)       | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
 
@@ -110,15 +114,511 @@ END ADR_AGENT_PROTOCOL
 
 ---
 
-## Note: Frontend Phase 2
+## ADR-1001 — React Hook Form + Shadcn UI Foundation
 
-Frontend ADRs will be added in Phase 2 (Weeks 5-8) when the Next.js frontend is developed.
+<a id="adr-1001"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
 
-Expected frontend ADRs:
-- ADR-1001: Next.js 14+ App Router Decision
-- ADR-1002: NextAuth.js for Authentication
-- ADR-1003: Tailwind CSS for Styling
-- ADR-1004: State Management Approach
-- ADR-1005: API Communication Pattern
+### Context
 
-<!-- Frontend ADRs will be added below this line in Phase 2 -->
+Week 2-4 prototype requires replicating government grant application forms in Next.js. Forms have complex validation, multi-step workflows, conditional fields, and must match government portal styling. Need a form library that supports dynamic schema-driven generation from scraped grant application structures while maintaining type safety and modern UX.
+
+### Alternatives
+
+* **React Hook Form + Shadcn UI (chosen)**:
+  - Pros: Minimal re-renders (performance), Zod integration for type-safe validation, Shadcn UI provides government-appropriate styling, large community, works well with dynamic schemas
+  - Cons: Manual form generation (not auto-generated from schema out-of-box)
+
+* **Formik + Material-UI**:
+  - Pros: Mature ecosystem, auto-generated forms possible
+  - Cons: Heavier bundle, more re-renders, Material-UI styling doesn't match government portals
+
+* **SurveyJS**:
+  - Pros: Complete form builder, JSON-based, PDF export built-in
+  - Cons: Commercial license required, overkill for prototype, doesn't support our specific collaboration requirements
+
+* **Custom form system**:
+  - Pros: Complete control
+  - Cons: Weeks of development, reinventing wheel
+
+### Decision
+
+Use **React Hook Form + Shadcn UI** as the foundation for all grant application forms:
+
+**React Hook Form** (form state management):
+- Uncontrolled components for performance
+- Zod resolver for validation from schemas
+- Watch API for conditional fields
+
+**Shadcn UI** (component library):
+- Tailwind-based components (easy to customize for government styling)
+- Accessible by default (WCAG compliance)
+- Copy-paste components (not a dependency - full control)
+- Form components: Input, Textarea, Select, Radio Group, Checkbox
+
+**Base template**: Clone `shadcn-nextjs-multistep-form-example` (https://github.com/63r6o/shadcn-nextjs-multistep-form-example) as starting point
+
+### Consequences
+
+* **Pros**:
+  - Type-safe forms with Zod validation
+  - Fast performance (uncontrolled components, minimal re-renders)
+  - Government-appropriate styling (Shadcn UI easily customizable)
+  - Multi-step form pattern well-established in template
+  - Save/resume functionality via LocalStorage (built into template)
+  - AI-friendly (easy to programmatically populate form values)
+
+* **Cons / risks**:
+  - Must build dynamic form generator (not built-in)
+  - Shadcn UI components must be copied into project (increases codebase size)
+  - Learning curve for Shadcn UI patterns (mitigated by template)
+
+* **Supersedes**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `front/grant-portal/package.json` - Includes `react-hook-form`, `@hookform/resolvers`, `zod`
+- `front/grant-portal/components/ui/` - Shadcn UI components installed
+- `front/grant-portal/app/applications/[grantId]/page.tsx` - Dynamic form using React Hook Form
+
+**Verification**:
+- Week 2: IGP form uses React Hook Form + Shadcn UI
+- Week 2: Form validation works with Zod schema
+- Week 2: Form styling matches government portal (stakeholder confirms)
+
+**AI Agent Guidance**: Always use React Hook Form for form state. Use Zod for validation schemas. Install Shadcn UI components via `npx shadcn-ui@latest add <component>`. Never use other form libraries. Reference template at https://github.com/63r6o/shadcn-nextjs-multistep-form-example for multi-step patterns.
+
+---
+
+## ADR-1002 — Schema-Driven Form Generation
+
+<a id="adr-1002"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Each grant has unique application forms (different fields, validation rules, conditional logic). Industry Growth Program has ~45 fields across 8 steps. Battery Breakthrough Initiative has ~60 fields with complex conditional sections. Cannot manually code each form - need programmatic generation from schemas extracted via `/analyze-application` command.
+
+### Alternatives
+
+* **Manual form coding**:
+  - Pros: Full control, explicit validation
+  - Cons: Weeks per form, unmaintainable, doesn't scale
+
+* **Schema-driven generation (chosen)**:
+  - Pros: One schema → one form, scalable, AI can generate schemas from PDFs
+  - Cons: Must build form generator, complex conditional logic requires careful schema design
+
+* **Form builder UI (SurveyJS)**:
+  - Pros: Visual form builder
+  - Cons: Commercial license, doesn't integrate with our AI population workflow
+
+### Decision
+
+Implement **schema-driven dynamic form generation** where each grant's application form is defined as a JSON schema, and a `DynamicForm` component renders it:
+
+**Schema format** (stored in `front/grant-portal/lib/schemas/{grant-id}.ts`):
+```typescript
+export const industryGrowthProgramSchema = {
+  grant_id: "igp-2025",
+  grant_name: "Industry Growth Program",
+  steps: [
+    {
+      id: "eligibility",
+      name: "Eligibility Check",
+      fields: [
+        {
+          id: "abn",
+          type: "text",
+          label: "Australian Business Number (ABN)",
+          required: true,
+          validation: { pattern: /^\d{11}$/, message: "ABN must be 11 digits" }
+        },
+        {
+          id: "employee_count",
+          type: "number",
+          label: "Number of Full-Time Employees",
+          required: true,
+          validation: { min: 1, max: 10000 }
+        }
+        // ... more fields
+      ]
+    },
+    {
+      id: "company_details",
+      name: "Company Details",
+      fields: [...]
+    }
+    // ... more steps
+  ]
+}
+```
+
+**Dynamic form renderer**:
+```tsx
+<DynamicForm schema={grantSchema} onSubmit={handleSubmit}>
+  {/* Automatically generates all steps and fields */}
+</DynamicForm>
+```
+
+**Field types supported**: `text`, `textarea`, `number`, `select`, `radio`, `checkbox`, `date`, `file`, `currency`, `address`, `abn`
+
+**Conditional fields**: Support `showIf` conditions in schema (e.g., show "Export countries" only if "Exporting" is "Yes")
+
+**Integration with `/analyze-application`**: Python command extracts form structure from PDF → generates TypeScript schema file
+
+### Consequences
+
+* **Pros**:
+  - Scalable: Add new grant = add new schema (not recode entire form)
+  - AI-friendly: Schema extraction from PDFs via LLM
+  - Type-safe: Zod schema auto-generated from JSON schema
+  - Maintainable: Update form = update schema JSON (not React components)
+  - Testable: Schema validation separate from UI
+
+* **Cons / risks**:
+  - Complex conditional logic hard to express in schema (mitigated: start with simple grants)
+  - Dynamic rendering can be harder to debug than explicit JSX
+  - Schema design requires careful planning
+
+* **Supersedes**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `front/grant-portal/lib/schemas/igp.ts` - IGP schema generated from `/analyze-application`
+- `front/grant-portal/components/forms/DynamicForm.tsx` - Schema renderer
+- `front/grant-portal/components/forms/DynamicField.tsx` - Field type router
+
+**Verification**:
+- Week 2: `/analyze-application igp` generates valid schema
+- Week 2: `DynamicForm` renders IGP form from schema
+- Week 2: All field types work (text, number, select, etc.)
+
+**Reference**: https://github.com/ansyg/nextjs-shadcn-dynamic-form for schema-driven patterns
+
+**AI Agent Guidance**: Every grant gets a schema in `lib/schemas/{grant-id}.ts`. Use `/analyze-application` to extract schema from grant PDFs. DynamicForm component handles rendering. Add new field types to DynamicField component as needed. Keep schemas simple initially - add conditional logic only when required.
+
+---
+
+## ADR-1003 — Multi-Step Form State Management
+
+<a id="adr-1003"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Grant applications have 5-10 steps (Eligibility → Company Details → Project Details → Financials → Documents → Review → Submit). Users must be able to navigate between steps, save progress, and resume later. Week 3 adds multi-user collaboration where consultant and client review same application simultaneously. Need state management for form data across steps and users.
+
+### Alternatives
+
+* **React Context API (chosen)**:
+  - Pros: Built into React, simple for prototype, localStorage persistence easy, no dependencies
+  - Cons: Re-renders on state change (mitigated by Context optimization)
+
+* **Redux Toolkit**:
+  - Pros: Powerful, time-travel debugging
+  - Cons: Overkill for prototype, boilerplate overhead, learning curve
+
+* **Zustand**:
+  - Pros: Minimal API, good performance
+  - Cons: Another dependency, less familiar
+
+* **React Hook Form only** (no global state):
+  - Pros: Simplest
+  - Cons: Loses data on step navigation, can't persist across sessions
+
+### Decision
+
+Use **React Context API** for multi-step form state management:
+
+**FormContext** provides:
+- Current step tracking
+- Form data for all steps
+- Navigation methods (`nextStep`, `prevStep`, `goToStep`)
+- Save/resume to localStorage
+- Validation state per step
+
+**Pattern** (from shadcn-nextjs-multistep-form-example):
+```tsx
+<FormProvider>
+  <MultiStepForm schema={grantSchema}>
+    <StepIndicator /> {/* Shows "Step 2 of 8" */}
+    <StepContent /> {/* Renders current step's fields */}
+    <StepNavigation /> {/* Previous/Next buttons */}
+  </MultiStepForm>
+</FormProvider>
+```
+
+**localStorage persistence**:
+```typescript
+// Auto-save on field change
+const saveToLocalStorage = debounce((formData) => {
+  localStorage.setItem(`application-${applicationId}`, JSON.stringify(formData))
+}, 1000)
+
+// Auto-resume on mount
+useEffect(() => {
+  const saved = localStorage.getItem(`application-${applicationId}`)
+  if (saved) setFormData(JSON.parse(saved))
+}, [])
+```
+
+**Week 3 enhancement**: Replace localStorage with Supabase/Firebase for real-time sync (see ADR-1004)
+
+### Consequences
+
+* **Pros**:
+  - Zero dependencies (Context API built-in)
+  - Save/resume works immediately (localStorage)
+  - Simple to understand and debug
+  - Easy migration to Supabase later (swap localStorage for database)
+  - Works offline (localStorage)
+
+* **Cons / risks**:
+  - localStorage limited to 5-10MB (acceptable for forms)
+  - No multi-device sync (until Week 3 Supabase integration)
+  - Context re-renders on any state change (mitigated: split contexts by concern)
+
+* **Supersedes**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `front/grant-portal/lib/contexts/FormContext.tsx` - Form state provider
+- `front/grant-portal/components/forms/MultiStepForm.tsx` - Multi-step wrapper
+- `front/grant-portal/components/forms/StepIndicator.tsx` - Progress indicator
+
+**Verification**:
+- Week 2: Navigate between steps without losing data
+- Week 2: Close browser, reopen → form data persists
+- Week 3: Replace localStorage with Supabase (see ADR-1004)
+
+**Reference**: https://github.com/63r6o/shadcn-nextjs-multistep-form-example for Context pattern
+
+**AI Agent Guidance**: Use FormContext for all form state. Never use component-level useState for form data (will lose on step change). Persist to localStorage on every change (debounced 1s). In Week 3, replace localStorage with Supabase but keep Context API structure.
+
+---
+
+## ADR-1004 — Collaboration Backend Decision
+
+<a id="adr-1004"></a>
+**Date**: 2025-11-12
+**Status**: Proposed
+**Owner**: Grant-Harness Team
+
+### Context
+
+Week 3 requires multi-stakeholder collaboration: consultant populates form, flags fields for review, CFO edits financial sections, CEO approves final draft. Need real-time updates, field-level comments, approval workflow, and audit trail. Currently using localStorage (ADR-1003) which is single-user only.
+
+**Decision required by**: Day 13 (Week 3 start)
+
+### Alternatives
+
+* **Supabase**:
+  - Pros: PostgreSQL + real-time subscriptions, Auth built-in, generous free tier, easy Vercel deployment, Row Level Security for access control
+  - Cons: Vendor lock-in, requires database schema design
+
+* **Firebase**:
+  - Pros: Real-time database, Auth built-in, Google ecosystem, easy setup
+  - Cons: NoSQL (harder for relational data like applications), pricing can escalate
+
+* **Custom backend (FastAPI + PostgreSQL + WebSockets)**:
+  - Pros: Full control, no vendor lock-in
+  - Cons: 1-2 weeks to build, overkill for prototype, deployment complexity
+
+* **Defer to Phase 2**:
+  - Pros: Focus on form generation first
+  - Cons: Can't demonstrate collaboration workflow (critical value prop)
+
+### Decision
+
+**Propose Supabase** (pending Week 3 evaluation):
+
+**Why Supabase**:
+- Real-time subscriptions for live collaboration
+- PostgreSQL for structured data (applications, comments, approvals)
+- Row Level Security for multi-tenant (consultant sees only their clients)
+- Auth with email/password (consultant, CEO, CFO login)
+- Free tier sufficient for prototype (up to 500MB DB, 2GB bandwidth)
+
+**Schema design**:
+```sql
+-- Applications table
+applications (
+  id uuid primary key,
+  company_id text,
+  grant_id text,
+  form_data jsonb,  -- All form fields
+  status text,      -- draft | in_review | approved | submitted
+  created_by uuid,
+  updated_at timestamp
+)
+
+-- Comments table (field-level)
+comments (
+  id uuid primary key,
+  application_id uuid,
+  field_id text,
+  content text,
+  author_id uuid,
+  created_at timestamp
+)
+
+-- Approvals table
+approvals (
+  id uuid primary key,
+  application_id uuid,
+  approver_id uuid,
+  status text,      -- pending | approved | rejected
+  comments text,
+  approved_at timestamp
+)
+```
+
+**Alternative if Supabase blocked**: Firebase Firestore (same schema, slightly different API)
+
+### Consequences
+
+* **Pros** (if Supabase chosen):
+  - Real-time collaboration ready in 2-3 days (vs 2 weeks custom backend)
+  - PostgreSQL for complex queries (e.g., "Show all pending approvals")
+  - Auth handled (consultant/CEO/CFO login)
+  - Scales to Phase 2 (multi-company dashboard)
+
+* **Cons / risks**:
+  - Vendor lock-in to Supabase (mitigated: can export PostgreSQL dump)
+  - Learning curve for team (mitigated: excellent docs)
+  - Pricing unknown at scale (free tier → $25/mo at ~1GB, acceptable)
+
+* **Supersedes**: localStorage-only approach (ADR-1003)
+
+### Compliance / Verification
+
+**Evidence Files** (to be created Week 3):
+- `front/grant-portal/lib/supabase/client.ts` - Supabase client setup
+- `front/grant-portal/lib/supabase/schema.sql` - Database schema
+- `front/grant-portal/hooks/useApplicationSync.ts` - Real-time sync hook
+
+**Verification** (Week 3):
+- Two users editing same form see real-time updates
+- Field-level comments appear instantly
+- Approval workflow tracks all changes
+
+**AI Agent Guidance**: Decision will be finalized at start of Week 3. If Supabase chosen, create schema in Supabase dashboard, configure environment variables, replace FormContext localStorage calls with Supabase queries. If Firebase chosen, use Firestore collections instead. Do NOT build custom backend.
+
+---
+
+## ADR-1005 — PDF Export Strategy
+
+<a id="adr-1005"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Week 4 requires exporting completed application forms to PDF format matching government portal styling (fonts, margins, headers, section breaks). Some grants accept PDF uploads, others require manual portal entry (PDF serves as review document). Need PDF generation that preserves form structure, includes supporting documents as appendices, and optionally includes digital signatures.
+
+### Alternatives
+
+* **react-pdf (@react-pdf/renderer)**:
+  - Pros: React components → PDF, good control, client-side generation
+  - Cons: Must rebuild entire form layout in PDF components (duplication)
+
+* **Puppeteer (server-side)**:
+  - Pros: Print browser view to PDF (no layout duplication)
+  - Cons: Requires backend, heavy (full Chrome), slower
+
+* **jsPDF + html2canvas**:
+  - Pros: Client-side, converts HTML to PDF directly
+  - Cons: Inconsistent rendering, poor handling of multi-page content
+
+* **Government portal scraping (Playwright)**:
+  - Pros: Submits directly to portal
+  - Cons: Brittle (portals change), complex per-grant, illegal for some portals
+
+### Decision
+
+Use **hybrid approach**:
+
+**For PDF-accepting grants**: react-pdf (@react-pdf/renderer)
+- Create PDF template matching government format
+- Populate from form data
+- Include supporting documents as appendices
+
+**For portal-entry grants**: Puppeteer headless print
+- Render completed form in browser
+- Print to PDF via Puppeteer
+- Use as review/approval document (not submission)
+
+**Phase 2 consideration**: Playwright portal automation (only for portals that allow automation)
+
+**Implementation** (Week 4):
+```typescript
+// PDF generation endpoint
+POST /api/applications/{id}/export?format=pdf
+
+// react-pdf template
+<PDFDocument>
+  <Page size="A4">
+    <Header grantName={grant.name} />
+    {formData.steps.map(step => (
+      <Section title={step.name}>
+        {step.fields.map(field => (
+          <Field label={field.label} value={field.value} />
+        ))}
+      </Section>
+    ))}
+  </Page>
+  {supportingDocs.map(doc => (
+    <Appendix document={doc} />
+  ))}
+</PDFDocument>
+```
+
+### Consequences
+
+* **Pros**:
+  - react-pdf gives precise control over formatting
+  - Matches government portal styling (stakeholder requirement)
+  - Includes supporting documents automatically
+  - Client-side generation (no backend needed initially)
+  - Digital signature support (react-pdf plugins available)
+
+* **Cons / risks**:
+  - Duplication: form layout in React + PDF layout (mitigated: shared data model)
+  - PDFs must be manually uploaded to portals (acceptable for prototype)
+  - Large PDFs (50+ pages) can be slow to generate (mitigated: show loading state)
+
+* **Supersedes**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `front/grant-portal/lib/pdf/templates/GrantApplicationPDF.tsx` - react-pdf template
+- `front/grant-portal/app/api/applications/[id]/export/route.ts` - Export endpoint
+
+**Verification**:
+- Week 4: Export IGP application to PDF
+- Week 4: PDF matches government portal format (stakeholder review)
+- Week 4: Supporting documents appear as appendices
+
+**Libraries**:
+```json
+{
+  "@react-pdf/renderer": "^3.1.0",
+  "puppeteer": "^21.0.0"  // Optional for Puppeteer approach
+}
+```
+
+**AI Agent Guidance**: Use react-pdf for PDF generation. Create template in `lib/pdf/templates/{grant-id}PDF.tsx` for each grant. Render form data into PDF template. For prototype, PDF is for stakeholder review and portal upload (not automated submission). In Phase 3, consider Playwright for automated portal submission (only for grants that permit it).
+
+---

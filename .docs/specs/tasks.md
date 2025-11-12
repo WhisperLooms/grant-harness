@@ -2,9 +2,36 @@
 
 Complete workflow from grant discovery through to submission, organized into 6 GitHub Issues.
 
+## CRITICAL: Application-First Strategy (ADR-0003)
+
+**Strategic Pivot**: Phase 1 (Weeks 1-4) prioritizes **application assistance** over grant discovery infrastructure.
+
+### Why Application-First?
+The primary value proposition is **helping clients safely and efficiently complete grant applications with expert input**, not just finding grants. Key requirements:
+1. **Accurate replica application forms** - NextJS forms matching government portals
+2. **AI-populated with highly relevant information** - Query company docs for field answers
+3. **Client control throughout** - Expert review and approval workflow
+4. **Significantly easier than manual** - Target: <2 hours vs 10+ hours manual
+
+### Phase 1 Focus (Weeks 1-4)
+- **Week 1**: Ingest EMEW data (bootstrap with existing docs), match to grants, select 2 target grants
+- **Week 2**: Replicate 2 grant application forms in NextJS (schema-driven dynamic generation)
+- **Week 3**: AI population (70% auto-fill target) + expert review workflow
+- **Week 4**: Collaboration (multi-stakeholder signoff) + PDF export + stakeholder demo
+
+### What's Deferred to Phase 2
+- Full scraper automation (50+ sources)
+- Multi-company profiling infrastructure
+- Advanced matching features
+- Production-scale infrastructure
+
+**Success Metric**: Week 4 demo must demonstrate <2 hour application completion vs 10+ hours manual
+
+---
+
 ## Workflow Overview
 
-The complete grant application journey follows: **g ’ c ’ m ’ a ’ p ’ s**
+The complete grant application journey follows: **g â†’ c â†’ m â†’ a â†’ p â†’ s**
 
 - **g**: Grant Discovery & Data Collection
 - **c**: Company Profiling
@@ -13,119 +40,115 @@ The complete grant application journey follows: **g ’ c ’ m ’ a ’ p ’ s**
 - **p**: Population & Collaboration
 - **s**: Signoff & Submission
 
-## Mermaid Workflow Diagram
+**Phase 1 (Weeks 1-4)**: Simplified gâ†’câ†’m (Week 1) â†’ a (Week 2) â†’ p (Week 3) â†’ s (Week 4)
+**Phase 2 (Weeks 5-8)**: Full g-series automation, multi-company c-series, advanced features
+
+## Phase 1 Application-First Workflow Diagram
 
 ```mermaid
 graph TD
-    Start([Start: Grant Opportunity Identified]) --> Issue1
+    Start([Start: EMEW Case Study]) --> Week1
 
-    subgraph Issue1["Issue #1: Grant Listing & Scraping"]
-        g01["/g01-grant-lists<br/>Compile Grant List"]
-        g02["/g02-grant-docs<br/>Scrape Full Details"]
-        g03["/g03-gemini-upload<br/>Upload to Vector DB"]
-        g04["/g04-grant-sync<br/>Detect Changes"]
-        g05["/g05-grant-validate<br/>Validate Data"]
+    subgraph Week1["WEEK 1: Grant & Company Ingestion<br/>(Issue #1 - Simplified)"]
+        w1d1["Day 1-2: Migrate EMEW Docs<br/>.docs/context â†’ .inputs/<br/>Upload to Gemini Company Corpus"]
+        w1d3["Day 3-4: Parse Grant Summary<br/>Download 8-10 Grant PDFs<br/>Upload to Gemini Grant Corpus"]
+        w1d5["Day 5: Match EMEW to Grants<br/>Select 2 Target Grants<br/>(e.g., IGP + BBI)"]
 
-        g01 --> g02
-        g02 --> g05
-        g05 --> g03
-        g03 --> g04
+        w1d1 --> w1d3
+        w1d3 --> w1d5
     end
 
-    subgraph Issue2["Issue #2: Company Scraping & Profiling"]
-        c01["/c01-company-scrape<br/>Extract Website Data"]
-        c02["/c02-company-profile<br/>Build Profile"]
-        c03["/c03-company-vector<br/>Create Vector DB"]
-        c04["/c04-company-docs<br/>Process Documents"]
-        c05["/c05-company-validate<br/>Validate Profile"]
+    Week1 --> Week2
 
-        c01 --> c02
-        c02 --> c04
-        c04 --> c02
-        c02 --> c05
-        c05 --> c03
+    subgraph Week2["WEEK 2: Application Form Replication<br/>(Issue #2 - Was Issue #4)"]
+        w2d1["Day 8: Analyze Grant #1 (IGP)<br/>Extract form structure â†’ JSON schema"]
+        w2d2["Day 9-10: Generate NextJS Form<br/>DynamicForm component<br/>Multi-step navigation"]
+        w2d3["Day 11-12: Replicate Grant #2 (BBI)<br/>Test both forms<br/>Stakeholder review"]
+
+        w2d1 --> w2d2
+        w2d2 --> w2d3
     end
 
-    subgraph Issue3["Issue #3: Matching & Analysis"]
-        m01["/m01-match-grants<br/>AI-Powered Matching"]
-        m02["/m02-match-explain<br/>Detailed Reasoning"]
-        m03["/m03-match-rank<br/>Prioritize Grants"]
-        m04["/m04-match-eligibility<br/>Eligibility Check"]
-        m05["/m05-match-export<br/>Export Results"]
+    Week2 --> Week3
 
-        m01 --> m03
-        m03 --> m02
-        m02 --> m04
-        m04 --> m05
+    subgraph Week3["WEEK 3: AI Population & Review<br/>(Issue #3 - Was Issue #5)"]
+        w3d1["Day 13: AI Population Engine<br/>Query Gemini Company Corpus<br/>Auto-fill 70% of fields"]
+        w3d2["Day 14: Field-Level AI Assist<br/>Inline regeneration<br/>Source citations"]
+        w3d3["Day 15-17: Review Workflow UI<br/>Flag fields for review<br/>Consultant approval tracking"]
+
+        w3d1 --> w3d2
+        w3d2 --> w3d3
     end
 
-    Issue1 --> Issue2
-    Issue2 --> Issue3
+    Week3 --> Week4
 
-    Decision{Apply to<br/>this grant?}
-    Issue3 --> Decision
+    subgraph Week4["WEEK 4: Collaboration & Export<br/>(Issue #4 - Was Issue #6)"]
+        w4d1["Day 18: Supporting Documents<br/>Drag-drop attachments<br/>AI suggests placement"]
+        w4d2["Day 19: Signoff Workflow<br/>Multi-stakeholder approval<br/>(Consultant â†’ CFO â†’ CEO)"]
+        w4d3["Day 20: PDF Export<br/>Match government format<br/>Include appendices"]
+        w4d4["Day 21-22: End-to-End Testing<br/>Record demo video<br/>Stakeholder presentation"]
 
-    Decision -->|No| End1([End: Grant Rejected])
-    Decision -->|Yes| Issue4
-
-    subgraph Issue4["Issue #4: Application Preparation<br/>(Phase 2)"]
-        a01["/a01-app-identify<br/>Identify Form Structure"]
-        a02["/a02-app-extract<br/>Extract Questions"]
-        a03["/a03-app-replicate<br/>Generate NextJS Form"]
-        a04["/a04-app-map<br/>Map Data to Fields"]
-        a05["/a05-app-validate<br/>Validate Mapping"]
-
-        a01 --> a02
-        a02 --> a03
-        a03 --> a04
-        a04 --> a05
+        w4d1 --> w4d2
+        w4d2 --> w4d3
+        w4d3 --> w4d4
     end
 
-    subgraph Issue5["Issue #5: Population & Collaboration<br/>(Phase 2)"]
-        p01["/p01-populate-ai<br/>AI Auto-Fill"]
-        p02["/p02-populate-review<br/>Flag for Review"]
-        p03["/p03-populate-comment<br/>Collaborative Editing"]
-        p04["/p04-populate-docs<br/>Attach Documents"]
-        p05["/p05-populate-export<br/>Generate Draft PDF"]
+    Week4 --> Decision{Demo Success?<br/>&lt;2 hour completion<br/>vs 10+ hours manual}
 
-        p01 --> p02
-        p02 --> p03
-        p03 --> p04
-        p04 --> p05
+    Decision -->|No| Pivot([Pivot Strategy<br/>or End Project])
+    Decision -->|Yes| Phase2
+
+    subgraph Phase2["PHASE 2: Production Scale<br/>(Weeks 5-8)"]
+        p2w5["Week 5: Production Backend<br/>ADK agents + PostgreSQL<br/>Automated scraping (50+ sources)"]
+        p2w6["Week 6: Multi-Company Dashboard<br/>Consultant managing 5-10 clients<br/>Application tracking"]
+        p2w7["Week 7: Advanced Collaboration<br/>Real-time sync (Supabase)<br/>Activity feed + comments"]
+        p2w8["Week 8: GCP Deployment<br/>CI/CD pipeline<br/>Monitoring + security"]
+
+        p2w5 --> p2w6
+        p2w6 --> p2w7
+        p2w7 --> p2w8
     end
 
-    Issue4 --> Issue5
+    Phase2 --> End([End: Production MVP<br/>5-10 companies using platform])
 
-    subgraph Issue6["Issue #6: Signoff & Submission<br/>(Phase 2-3)"]
-        s01["/s01-signoff-request<br/>Request Approvals"]
-        s02["/s02-signoff-track<br/>Track Status"]
-        s03["/s03-signoff-changes<br/>Implement Changes"]
-        s04["/s04-signoff-finalize<br/>Lock Application"]
-        s05["/s05-submit-portal<br/>Submit to Portal"]
+    classDef week1 fill:#e1f5e1,stroke:#4caf50,stroke-width:2px
+    classDef week2 fill:#bbdefb,stroke:#2196f3,stroke-width:2px
+    classDef week3 fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    classDef week4 fill:#ffccbc,stroke:#ff9800,stroke-width:2px
+    classDef phase2 fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    classDef decision fill:#ffebee,stroke:#f44336,stroke-width:3px
 
-        s01 --> s02
-        s02 --> Changes{Changes<br/>requested?}
-        Changes -->|Yes| s03
-        s03 --> s01
-        Changes -->|No| s04
-        s04 --> s05
-    end
-
-    Issue5 --> Issue6
-    Issue6 --> End2([End: Application Submitted])
-
-    classDef phase1 fill:#e1f5e1,stroke:#4caf50,stroke-width:2px
-    classDef phase2 fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
-    classDef phase3 fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-
-    class Issue1,Issue2,Issue3 phase1
-    class Issue4,Issue5 phase2
-    class Issue6 phase3
-    class Decision,Changes decision
+    class Week1 week1
+    class Week2 week2
+    class Week3 week3
+    class Week4 week4
+    class Phase2 phase2
+    class Decision decision
 ```
 
-## GitHub Issues
+## GitHub Issues - Application-First Recalibration
+
+**IMPORTANT**: GitHub Issues have been recalibrated to reflect the application-first strategy (ADR-0003).
+
+**See `.docs/specs/github-issues-update-plan.md` for complete recalibration details and copy-paste ready issue descriptions.**
+
+### New Priority Order (Phase 1, Weeks 1-4)
+1. **Issue #1**: Grant & Company Ingestion (Week 1) - Simplified bootstrap with EMEW docs
+2. **Issue #2**: Application Form Replication (Week 2) - NextJS forms (was Issue #4)
+3. **Issue #3**: AI-Powered Population & Review (Week 3) - Auto-fill + review workflow (was Issue #5)
+4. **Issue #4**: Collaboration & Export (Week 4) - Signoff + PDF export (was Issue #6)
+
+### Deferred to Phase 2 (Weeks 5-8)
+5. **Issue #5**: Company Profiling - Full multi-company features (was Issue #2)
+6. **Issue #6**: Production Scrapers - Automated 50+ source scraping (was Issue #1 advanced features)
+
+**Decision Point**: Week 4 demo must show <2 hour application completion vs 10+ hours manual to proceed to Phase 2.
+
+---
+
+## GitHub Issues - Original Descriptions (Pre-Recalibration)
+
+**Note**: The descriptions below reflect the original scope. See `.docs/specs/github-issues-update-plan.md` for updated descriptions matching the application-first strategy.
 
 ### [Issue #1: Grant Listing and Scraping Commands](https://github.com/WhisperLooms/grant-harness/issues/1)
 **Phase 1 - Week 1-2**
@@ -184,7 +207,7 @@ Commands:
 
 **Implementation**: `back/grant-prototype/application/`, `front/grant-portal/components/applications/`
 **Dependencies**: Issue #1 (grant documents), Issue #2 (company data), NextJS setup
-**Status**: ø Phase 2 - Specifications complete, implementation deferred
+**Status**: ï¿½ Phase 2 - Specifications complete, implementation deferred
 
 ---
 
@@ -200,7 +223,7 @@ Commands:
 
 **Implementation**: `back/grant-prototype/application/populator.py`, `front/grant-portal/components/collaboration/`
 **Dependencies**: Issue #2 (company vector DB), Issue #4 (form replication), Firebase/Supabase
-**Status**: ø Phase 2 - Requires frontend setup and real-time collaboration
+**Status**: ï¿½ Phase 2 - Requires frontend setup and real-time collaboration
 
 ---
 
@@ -216,7 +239,7 @@ Commands:
 
 **Implementation**: `back/grant-prototype/submission/`, `front/grant-portal/components/signoff/`
 **Dependencies**: Issue #5 (completed application), Email service, Digital signatures, Playwright
-**Status**: ø Phase 2-3 - Portal integration research required
+**Status**: ï¿½ Phase 2-3 - Portal integration research required
 
 ---
 
@@ -225,21 +248,21 @@ Commands:
 ### Phase 1: Python Prototype (Weeks 0-4)
 - **Week 0**:  Repository setup, slash command specifications, ADR-2050
 - **Week 1-2**: = Issue #1 (Grant commands)
-- **Week 2-3**: ó Issue #2 (Company commands)
-- **Week 3-4**: ó Issue #3 (Matching commands)
+- **Week 2-3**: ï¿½ Issue #2 (Company commands)
+- **Week 3-4**: ï¿½ Issue #3 (Matching commands)
 
-**Deliverable**: Working prototype with EMEW case study (g’c’m workflow)
+**Deliverable**: Working prototype with EMEW case study (gï¿½cï¿½m workflow)
 
 ### Phase 2: MVP with Basic UI (Weeks 5-8)
-- **Week 5-6**: ø Issue #4 (Application commands)
-- **Week 6-7**: ø Issue #5 (Population commands)
-- **Week 7-8**: ø Issue #6 (Signoff planning)
+- **Week 5-6**: ï¿½ Issue #4 (Application commands)
+- **Week 6-7**: ï¿½ Issue #5 (Population commands)
+- **Week 7-8**: ï¿½ Issue #6 (Signoff planning)
 
 **Deliverable**: NextJS portal with application generation
 
 ### Phase 3: Production Scale (Weeks 9-12)
-- **Week 9-10**: ø Scale to 50+ grant sources
-- **Week 11-12**: ø Issue #6 (Submission implementation)
+- **Week 9-10**: ï¿½ Scale to 50+ grant sources
+- **Week 11-12**: ï¿½ Issue #6 (Submission implementation)
 
 **Deliverable**: Production-ready platform with full workflow
 
@@ -252,13 +275,13 @@ Commands:
 | Phase | Series | Commands | Issue | Status |
 |-------|--------|----------|-------|--------|
 | 1 | G | g01-g05 | [#1](https://github.com/WhisperLooms/grant-harness/issues/1) | = In Progress |
-| 1 | C | c01-c05 | [#2](https://github.com/WhisperLooms/grant-harness/issues/2) | ó Planned |
-| 1 | M | m01-m05 | [#3](https://github.com/WhisperLooms/grant-harness/issues/3) | ó Planned |
-| 2 | A | a01-a05 | [#4](https://github.com/WhisperLooms/grant-harness/issues/4) | ø Phase 2 |
-| 2 | P | p01-p05 | [#5](https://github.com/WhisperLooms/grant-harness/issues/5) | ø Phase 2 |
-| 2-3 | S | s01-s05 | [#6](https://github.com/WhisperLooms/grant-harness/issues/6) | ø Phase 2-3 |
+| 1 | C | c01-c05 | [#2](https://github.com/WhisperLooms/grant-harness/issues/2) | ï¿½ Planned |
+| 1 | M | m01-m05 | [#3](https://github.com/WhisperLooms/grant-harness/issues/3) | ï¿½ Planned |
+| 2 | A | a01-a05 | [#4](https://github.com/WhisperLooms/grant-harness/issues/4) | ï¿½ Phase 2 |
+| 2 | P | p01-p05 | [#5](https://github.com/WhisperLooms/grant-harness/issues/5) | ï¿½ Phase 2 |
+| 2-3 | S | s01-s05 | [#6](https://github.com/WhisperLooms/grant-harness/issues/6) | ï¿½ Phase 2-3 |
 
-**Legend**:  Complete | = In Progress | ó Planned | ø Deferred
+**Legend**:  Complete | = In Progress | ï¿½ Planned | ï¿½ Deferred
 
 ---
 
@@ -275,17 +298,19 @@ Commands:
 ## Testing Strategy
 
 ### Phase 1 Integration Tests
-1. **Grant Discovery** (Issue #1): Scrape GrantConnect ’ 10+ grants in Gemini
-2. **Company Profile** (Issue #2): EMEW website ’ validated profile
-3. **Matching** (Issue #3): EMEW + grants ’ >0.8 relevance matches
+1. **Grant Discovery** (Issue #1): Scrape GrantConnect ï¿½ 10+ grants in Gemini
+2. **Company Profile** (Issue #2): EMEW website ï¿½ validated profile
+3. **Matching** (Issue #3): EMEW + grants ï¿½ >0.8 relevance matches
 
 ### Phase 2 Integration Tests
-4. **Application Prep** (Issue #4): Recycling Modernisation Fund ’ NextJS form
-5. **Population** (Issue #5): EMEW + form ’ 70%+ auto-filled draft
-6. **Submission** (Issue #6): Draft ’ approved ’ submitted to GrantConnect
+4. **Application Prep** (Issue #4): Recycling Modernisation Fund ï¿½ NextJS form
+5. **Population** (Issue #5): EMEW + form ï¿½ 70%+ auto-filled draft
+6. **Submission** (Issue #6): Draft ï¿½ approved ï¿½ submitted to GrantConnect
 
 ---
 
 **Last Updated**: 2025-11-12
-**Current Phase**: Phase 1 - Week 0 (Foundation Setup Complete)
-**Next Milestone**: Issue #1 completion (Week 2)
+**Current Phase**: Phase 0 Complete - Ready for Week 1 (Grant & Company Ingestion)
+**Next Milestone**: Week 1 - EMEW Bootstrap & Grant Matching (Issue #1)
+**Strategic Priority**: Application Assistance > Grant Discovery (ADR-0003)
+**Week 4 Success Metric**: Demo <2 hour application completion vs 10+ hours manual

@@ -22,7 +22,7 @@ You are helping set up the Grant-Harness repository for development. Follow thes
 
 4. **Verify Documentation**
    - Check that CLAUDE.md exists at root
-   - Check that ADR-0001 and ADR-0002 exist in `.cursor/rules/platform/ADR.mdc`
+   - Check that ADR-0001 and ADR-0002 exist in `.cursor/rules/ADR.mdc`
    - List any missing documentation files
 
 5. **Run Initial Tests**

@@ -12,7 +12,7 @@ ADR_AGENT_PROTOCOL v1.0
 You (the agent) manage this file as the single source of truth for all platform ADRs.
 
 NUMBER RANGE CONVENTION
-- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/platform/ADR.mdc)
+- Platform ADRs: ADR-0001 to ADR-0999 (.cursor/rules/ADR.mdc)
 - Frontend ADRs: ADR-1000 to ADR-1999 (.cursor/rules/frontend/ADR.mdc)
 - Backend Infrastructure: ADR-2000 to ADR-2049 (.cursor/rules/backend/ADR.mdc)
 - Backend Grant Prototype: ADR-2050 to ADR-2099 (.cursor/rules/backend/grant-prototype/ADR.mdc)
@@ -63,6 +63,7 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
+| 0003 | [Application-First Prototype Strategy](#adr-0003)         | 2025-11-12 | Accepted | —          | —             |
 | 0002 | [Gemini File Search for Vector Storage](#adr-0002)        | 2025-11-11 | Accepted | —          | —             |
 | 0001 | [Monorepo Structure Decision](#adr-0001)                  | 2025-11-11 | Accepted | —          | —             |
 
@@ -149,9 +150,12 @@ grant-harness/
 │   ├── specs/              # Project specifications
 │   ├── research/           # Grant sources research
 │   ├── architecture/       # Architecture diagrams
-│   └── context/            # Test data and samples
+│   └── context/            # Test data and samples (research/reference)
 ├── back/                   # Backend components
 │   ├── grant-prototype/    # Phase 1: Python prototype
+│   │   └── .inputs/        # Managed input data (NOT git tracked)
+│   │       ├── companies/  # Company-specific documents and profiles
+│   │       └── grants/     # Grant documents and metadata
 │   └── grant-adk/          # Phase 2: Production ADK agents
 └── front/                  # Frontend components
     └── grant-portal/       # Phase 2: Next.js frontend
@@ -245,3 +249,87 @@ RAG_CORPUS=projects/{project}/locations/{location}/ragCorpora/{corpus_id}
 - Gemini File Search: ~$1-5/month (managed service, included embeddings)
 
 **AI Agent Guidance**: Always use Gemini File API for grant storage. Upload documents via `file_manager.py`. Query using semantic search through `query_engine.py`. Track all uploaded files in `gemini-file-index.json` with metadata. Use citations in all grant match responses. For prototype (Phase 1), use Gemini API key. For production (Phase 2), use Vertex AI with service account.
+
+---
+
+## ADR-0003 — Application-First Prototype Strategy
+
+<a id="adr-0003"></a>
+**Date**: 2025-11-12
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Original prototype plan prioritized building comprehensive grant discovery infrastructure (30 slash commands, full scraper system for 50+ sources) before application assistance features. Client feedback revealed the actual priority: "Help me complete grant applications" > "Discover grants I'm eligible for". EMEW case study shows companies typically identify grants independently but struggle with time-intensive application completion (10+ hours per application).
+
+### Alternatives
+
+- **Grant Discovery First** (original plan):
+  - Build all scrapers (g01-g05) → Company profiling (c01-c05) → Matching (m01-m05) → THEN application features (Phase 2)
+  - Pros: Comprehensive grant coverage, automated discovery
+  - Cons: 4-6 weeks before demonstrating core value, expensive infrastructure investment before validating product-market fit
+
+- **Application Assistance First** (chosen):
+  - Minimal grant ingestion → Company profiling → Matching → Application replication/population (Week 2-4)
+  - Pros: Demonstrates core value in 2-3 weeks, validates AI population quality early, quick wins for initial clients
+  - Cons: Limited grant coverage initially, manual grant curation required
+
+- **Hybrid Approach**:
+  - Parallel development of scrapers and application features
+  - Pros: Both capabilities developed simultaneously
+  - Cons: Resource dilution, unclear priority, delayed validation of either capability
+
+### Decision
+
+**Phase 1 Prototype (Weeks 1-4) prioritizes application assistance over grant discovery**:
+
+**Week 1**: Ingest existing grant research + EMEW corporate docs → Match to grants → Select 2 target grants
+
+**Week 2**: Replicate 2 grant application forms in NextJS (schema-driven dynamic forms)
+
+**Week 3**: AI-powered population (70% auto-fill target) + expert review workflow
+
+**Week 4**: Collaboration (multi-stakeholder signoff) + PDF export
+
+**Defer to Phase 2 (Weeks 5-8)**:
+- Full scraper automation (g01-g05 all sources)
+- Multi-company dashboard
+- Advanced matching features
+- Scaling to 50+ grant sources
+
+**Validation criteria**: If prototype demonstrates <2 hour application completion (vs 10+ hours manual), proceed to Phase 2 MVP. If AI population quality is poor (<50% usable), pivot to improving matching/discovery instead.
+
+### Consequences
+
+* **Pros**:
+  - Quick wins for first clients (working application assistance by Week 4)
+  - Early validation of core value proposition (AI application population quality)
+  - Fails fast if AI population doesn't work (Week 3 vs Week 8)
+  - Leverages existing EMEW grant research (no need to build scrapers first)
+  - Clearer ROI demonstration for stakeholders (time saved per application)
+
+* **Cons / risks**:
+  - Limited grant coverage in prototype (8-10 grants vs 50+)
+  - Manual grant curation required initially
+  - Pivot risk if stakeholders prioritize discovery over application assistance
+  - Frontend development earlier than planned (Week 2-4 vs Week 5-8)
+
+* **Supersedes**: Original phased development plan (scraping-first approach)
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**Evidence Files**:
+- `.docs/specs/tasks.md` - Updated workflow diagram showing application-first sequence
+- `.docs/specs/mvp-conceptual-plan.md` - Phase 2 vision with deferred scraper features
+- `.claude/commands/` - Consolidated commands (10 vs 30) focusing on application workflow
+- `back/grant-prototype/.inputs/` - Data management pattern for existing grant research
+
+**Success Metrics**:
+- Week 2: 2 NextJS forms replicating real grant applications
+- Week 3: 70% of form fields auto-filled with EMEW data
+- Week 4: Stakeholder demo shows <2 hour application completion
+- Go/No-Go decision: Proceed to Phase 2 if time savings demonstrated
+
+**AI Agent Guidance**: Always prioritize application assistance features over grant discovery infrastructure in Phase 1. Use existing EMEW grant research from `.docs/context/emew-context/grant-search/` instead of building scrapers. Focus Week 2-4 on form replication, AI population, and collaboration workflow. Only build full scraper infrastructure in Phase 2 after validating application assistance value.

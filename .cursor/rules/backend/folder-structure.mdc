@@ -1,0 +1,89 @@
+---
+alwaysApply: false
+---
+
+# ADK Orchestrator - Directory Structure
+
+This document explains the directory structure of the ADK orchestrator backend for BYO Judge.
+
+## Overview
+
+The ADK orchestrator follows a clean architecture pattern with separation between agent logic, shared utilities, evaluation framework, and testing infrastructure. The structure enforces ASCII-only Python code for optimal ADK performance.
+
+## Root Structure
+
+```
+back/grant-prototype/            # Pythong V1 Protoytpe(In development)
+├── .outputs/                    # Folder for outputs from agent
+│   ├── grant                    # Output from g## commands, agents or skills
+│   ├── company                  # Output from c## commands, agents or skills
+│   ├── matching                 # Output from m## commands, agents or skills
+│   └── application              # Output from a## commands, agents or skills
+│   └── signoff                  # Output from s## commands, agents or skills
+├── scrapers/
+│   ├── __init__.py
+│   ├── base_scraper.py
+│   ├── federal_grants.py
+│   ├── vic_grants.py
+│   ├── nsw_grants.py
+│   └── qld_grants.py
+├── gemini_store/
+│   ├── __init__.py
+│   ├── file_manager.py
+│   ├── corpus_builder.py
+│   └── query_engine.py
+├── matching/
+│   ├── __init__.py
+│   ├── company_analyzer.py
+│   └── grant_matcher.py
+├── models/
+│   ├── __init__.py
+│   └── entities.py
+├── tests/
+│   ├── test_scrapers.py
+│   ├── test_gemini_store.py
+│   └── test_matching.py
+│   ├── evalsets/                # Test scenarios
+│   └── runners/                 # Evaluation scripts
+├── deployment/                  # Vertex AI Agent Engine deployment
+│   ├── deploy.py                # Deploy agent to Vertex AI
+│   ├── run.py                   # Test deployed agent
+│   └── grant_permissions.sh     # RAG corpus permissions
+├── .env                         # Environment configuration (⚠️ Sensitive)
+├── .venv/                       # Virtual environment (uv-managed)
+├── pyproject.toml               # uv dependencies 
+├── uv.lock                      # Dependency lockfile (541KB)
+└── README.md                    # Workflow diagram
+```
+
+## Folder Details
+
+### `grant-prototype/` - Agent Implementation Module
+
+**Purpose**: Contains the core agent logic: agent definition, system prompts, and corpus management.
+
+**Key Files**:
+[To be completed]
+
+**Conventions**:
+- ASCII-only Python code (no Unicode characters per ADR-2002)
+- Type hints required for all functions
+- Google-style docstrings
+- Environment-aware RAG corpus configuration
+
+**When to Modify**:
+[To be completed]
+
+**Related ADRs**:
+[To be completed]
+
+---
+
+### `eval/` - 
+
+**Purpose**: Structured testing of agent behavior .
+
+[To be completed]
+
+---
+
