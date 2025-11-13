@@ -74,7 +74,7 @@ END ADR_AGENT_PROTOCOL
 | 2054 | [Company Data Quality Standards: TBC and Citations](#adr-2054) | 2025-11-12 | Accepted | —          | —             |
 | 2053 | [EMEW Bootstrap Strategy](#adr-2053)                      | 2025-11-12 | Accepted | —          | —             |
 | 2052 | [Input Data Management Pattern](#adr-2052)                | 2025-11-12 | Accepted | —          | —             |
-| 2051 | [Gemini Dual-Corpus Architecture](#adr-2051)              | 2025-11-12 | Proposed | —          | —             |
+| 2051 | [Gemini Dual-Corpus Architecture](#adr-2051)              | 2025-11-12 | Accepted | —          | —             |
 | 2050 | [crawl4ai for AI-Powered Web Scraping](#adr-2050)         | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
@@ -190,7 +190,7 @@ Changes from original plan:
 
 <a id="adr-2051"></a>
 **Date**: 2025-11-12
-**Status**: Proposed
+**Status**: Accepted
 **Owner**: Grant-Harness Team
 
 ### Context
