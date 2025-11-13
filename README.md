@@ -20,7 +20,7 @@ Grant-Harness helps Australian SMEs in recycling, renewable energy, manufacturin
 
 ## Current Status
 
-**Phase**: Week 0 - Foundation Setup (Repository Initialization)
+**Phase**: Week 2 - Application Form Replication (Issue #2)
 **Version**: 2.0 (Strategic Rebuild)
 
 This is a fresh start following architectural decisions documented in the [Repository Initiation Plan](.docs/specs/Grant-Harness_Repository-Initiation-Plan.md).
@@ -29,11 +29,18 @@ This is a fresh start following architectural decisions documented in the [Repos
 
 ### Prerequisites
 
+**Backend (Python Prototype)**:
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) package manager
 - Google Cloud Project (for Gemini API/Vertex AI)
 
+**Frontend (Grant Portal)**:
+- Node.js 20.9+ (required for Next.js 15)
+- npm 10+ or pnpm 8+
+
 ### Setup
+
+#### Backend Setup (Phase 1 Prototype)
 
 ```bash
 # Clone repository
@@ -51,6 +58,36 @@ cp .env.example .env
 # Run tests
 uv run pytest tests/ -v
 ```
+
+#### Frontend Setup (Grant Portal)
+
+```bash
+# Navigate to frontend directory
+cd front/grant-portal
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Open browser to http://localhost:3000
+```
+
+**Available Frontend Commands**:
+```bash
+npm run dev          # Start dev server (http://localhost:3000)
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run test         # Run Playwright E2E tests (coming soon)
+```
+
+**Frontend Development**:
+- Development server runs at: `http://localhost:3000`
+- Hot reload enabled (changes appear instantly)
+- Form data auto-saves to browser LocalStorage
+- No backend required for Phase 1 (LocalStorage only)
 
 ## Project Structure
 

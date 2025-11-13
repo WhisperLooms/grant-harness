@@ -64,6 +64,7 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
+| 1006 | [URL Structure for Multi-Grant Multi-Client Scale](#adr-1006) | 2025-11-13 | Accepted | —          | —             |
 | 1005 | [PDF Export Strategy](#adr-1005)                          | 2025-11-12 | Accepted | —          | —             |
 | 1004 | [Collaboration Backend Decision](#adr-1004)               | 2025-11-12 | Proposed | —          | —             |
 | 1003 | [Multi-Step Form State Management](#adr-1003)             | 2025-11-12 | Accepted | —          | —             |
@@ -147,16 +148,32 @@ Week 2-4 prototype requires replicating government grant application forms in Ne
 
 Use **React Hook Form + Shadcn UI** as the foundation for all grant application forms:
 
+**Core Tech Stack**:
+- **Next.js 15.x** (App Router) - Latest stable version with React 19 support
+- **React 19.x** - Modern React with concurrent features and improved form handling
+- **TypeScript 5.1+** - Type safety and developer experience
+- **Node.js 20.9+** - Required for Next.js 15
+- **Tailwind CSS 3.4+** - Utility-first CSS framework (via Shadcn UI)
+
+**Rationale for Next.js 15**:
+- React 19 compatibility (v16 too new/unstable, v14 stuck on React 18)
+- Stable ecosystem support (Shadcn UI fully compatible)
+- Modern App Router features (async components, server actions)
+- Active LTS with security updates through 2025
+- Avoids breaking changes in v16 (async params, AMP removal)
+
 **React Hook Form** (form state management):
 - Uncontrolled components for performance
 - Zod resolver for validation from schemas
 - Watch API for conditional fields
+- Client-side validation (compatible with React 19)
 
 **Shadcn UI** (component library):
 - Tailwind-based components (easy to customize for government styling)
 - Accessible by default (WCAG compliance)
 - Copy-paste components (not a dependency - full control)
 - Form components: Input, Textarea, Select, Radio Group, Checkbox
+- React 19 compatible (tested with latest release)
 
 **Base template**: Clone `shadcn-nextjs-multistep-form-example` (https://github.com/63r6o/shadcn-nextjs-multistep-form-example) as starting point
 
@@ -620,5 +637,150 @@ POST /api/applications/{id}/export?format=pdf
 ```
 
 **AI Agent Guidance**: Use react-pdf for PDF generation. Create template in `lib/pdf/templates/{grant-id}PDF.tsx` for each grant. Render form data into PDF template. For prototype, PDF is for stakeholder review and portal upload (not automated submission). In Phase 3, consider Playwright for automated portal submission (only for grants that permit it).
+
+---
+
+## ADR-1006 — URL Structure for Multi-Grant Multi-Client Scale
+
+<a id="adr-1006"></a>
+**Date**: 2025-11-13
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Phase 1 prototype uses URL structure `/applications/igp-commercialisation/step1` which is grant-specific. This works for demonstrating the form pattern but doesn't scale to production requirements:
+
+**Scalability Problems**:
+1. **Multiple grants**: Platform will have 50-100+ different grants, each needs unique forms
+2. **Multiple clients per grant**: Same grant (e.g., IGP) will have 10-50+ companies applying simultaneously
+3. **Multiple applications per client**: Each company may apply to 5-10 grants, need to distinguish between applications
+4. **Resume vs New**: Need to differentiate "start new application" vs "resume existing application"
+
+**Current Limitations**:
+- No way to distinguish between applications from different companies
+- No UUID/ID to identify specific application instances
+- LocalStorage key is grant-specific, not application-specific
+- No dashboard to list user's applications
+
+### Alternatives
+
+**Option 1: Keep current structure (Prototype only)**:
+- `/applications/[grantId]/step[N]`
+- Pros: Simple for prototype, no refactoring needed
+- Cons: Doesn't scale, migration required in Phase 2
+
+**Option 2: Add application ID immediately**:
+- `/applications/[applicationId]/step[N]`
+- Pros: Scalable from day 1, no migration needed
+- Cons: Premature optimization, adds complexity to prototype (no user accounts yet)
+
+**Option 3: Hybrid approach - prep for migration (chosen)**:
+- **Phase 1 (Prototype)**: Keep `/applications/[grantId]/step[N]`
+- **Phase 2 (Production)**: Migrate to `/applications/[applicationId]/step[N]`
+- Pros: Simple now, clear migration path
+- Cons: One-time migration effort (acceptable)
+
+### Decision
+
+**Phase 1 URL Structure** (Current - No changes):
+```
+/applications/igp-commercialisation/step1
+/applications/igp-commercialisation/step2
+...
+/applications/bbi-initiative/step1
+```
+
+**LocalStorage keys**:
+```typescript
+grant_portal_igp_commercialisation_form    // Form data
+grant_portal_igp_current_step              // Current step
+```
+
+**Phase 2 URL Structure** (Future - when Firebase auth added):
+```
+/applications/new/[grantId]              → Redirect to /applications/[newUUID]/step1
+/applications/[applicationId]/step[N]    → Resume existing application
+/dashboard/applications                   → List all user's applications
+```
+
+**Migration Path**:
+1. Add Firebase Authentication (user accounts)
+2. Create `applications` collection in Firestore with schema:
+   ```typescript
+   {
+     id: UUID,                    // Application ID
+     userId: string,              // Owner
+     grantId: string,             // e.g., "igp-commercialisation"
+     companyId: string,           // e.g., "c-emew"
+     status: "draft" | "submitted" | "approved",
+     currentStep: number,
+     formData: {...},             // All steps
+     createdAt: timestamp,
+     updatedAt: timestamp
+   }
+   ```
+3. When user signs up, detect LocalStorage applications → prompt to import:
+   ```typescript
+   const localApps = detectLocalStorageApplications(); // [{grantId: "igp-commercialisation", formData: {...}}]
+   if (localApps.length > 0) {
+     showImportPrompt("We found 2 draft applications. Import them?");
+     // Create Firestore documents with new UUIDs
+   }
+   ```
+4. Update routing:
+   ```typescript
+   // Old URL redirect
+   /applications/igp-commercialisation/step1
+     → Redirect to /applications/new/igp-commercialisation
+     → Create new application UUID
+     → Redirect to /applications/{newUUID}/step1
+
+   // New URL pattern
+   /applications/[applicationId]/step[N]  ← Primary pattern
+   ```
+
+**Benefits of delayed migration**:
+- Prototype stays simple (no UUID generation, no database)
+- Form pattern proven before scaling complexity
+- LocalStorage → Firestore migration is one-time operation
+- URL structure change is backward-compatible (old URLs redirect)
+
+### Consequences
+
+* **Pros**:
+  - Prototype complexity minimized (focus on form pattern)
+  - Clear migration path documented
+  - LocalStorage data preserved (imported to Firestore in Phase 2)
+  - URL pattern extensible (supports 100+ grants, 1000+ applications)
+
+* **Cons / risks**:
+  - One-time migration effort in Phase 2 (acceptable: ~1-2 days)
+  - Old URLs will need redirects (mitigated: automatic redirect)
+  - Users with draft applications must import manually (mitigated: auto-detect and prompt)
+
+* **Supersedes**: —
+
+### Compliance / Verification
+
+**Phase 1 (Current)**:
+- ✅ URLs follow pattern: `/applications/[grantId]/step[N]`
+- ✅ LocalStorage keys include grant ID
+- ✅ No application ID or user ID required
+
+**Phase 2 (Migration checklist)**:
+- [ ] Firebase Authentication configured
+- [ ] Firestore `applications` collection created
+- [ ] LocalStorage detection and import flow implemented
+- [ ] URL routing updated to `/applications/[applicationId]/step[N]`
+- [ ] Old URLs redirect to new pattern
+- [ ] Dashboard page created (`/dashboard/applications`)
+
+**Evidence Files** (Phase 2):
+- `front/grant-portal/app/(protected)/applications/[applicationId]/step[N]/page.tsx`
+- `front/grant-portal/app/(protected)/dashboard/applications/page.tsx`
+- `front/grant-portal/lib/migrations/importLocalStorageApplications.ts`
+
+**AI Agent Guidance**: For Phase 1, keep URLs simple (`/applications/[grantId]/step[N]`). Do NOT add application IDs or UUIDs yet. In Phase 2, when adding Firebase auth, implement migration per this ADR. Always use application ID in Firestore (never rely on grant ID alone). When creating new applications, generate UUID and redirect to `/applications/[UUID]/step1`.
 
 ---
