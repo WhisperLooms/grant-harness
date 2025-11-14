@@ -28,6 +28,7 @@ export default function Step5BudgetPage() {
   const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step5BudgetData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step5BudgetSchema),
     defaultValues: formData.step5_budget || {
       labourCosts: 0,

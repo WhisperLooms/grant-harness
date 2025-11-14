@@ -30,6 +30,7 @@ export default function Step4ProjectPage() {
   const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step4ProjectData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step4ProjectSchema),
     defaultValues: formData.step4_project || {
       projectTitle: "",

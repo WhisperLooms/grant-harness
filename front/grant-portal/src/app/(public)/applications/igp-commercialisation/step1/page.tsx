@@ -29,6 +29,7 @@ export default function Step1EligibilityPage() {
   const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step1EligibilityData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step1EligibilitySchema),
     defaultValues: formData.step1_eligibility || {
       entityType: undefined,

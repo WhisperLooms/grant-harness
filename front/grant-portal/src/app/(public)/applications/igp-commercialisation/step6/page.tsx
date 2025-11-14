@@ -28,6 +28,7 @@ export default function Step6AssessmentPage() {
   const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step6AssessmentData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step6AssessmentSchema),
     defaultValues: formData.step6_assessment || {
       criterion1Response: "",

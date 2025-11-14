@@ -159,8 +159,25 @@ echo "back/grant-prototype/.inputs/" >> .gitignore
 |--------------|-----------|-----------|
 | `back/grant-prototype/` | `.cursor/rules/backend/grant-prototype/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
 | `back/grant-adk/` (future) | `.cursor/rules/backend/ADR.mdc` | `.cursor/rules/backend/workflow.mdc` |
-| `front/grant-portal/` (future) | `.cursor/rules/frontend/ADR.mdc` | `.cursor/rules/frontend/workflow.mdc` |
+| `front/grant-portal/` (future) | `.cursor/rules/frontend/ADR.mdc` | `.cursor/rules/frontend/workflow.mdc` + **`.cursor/rules/frontend/testing-workflow.mdc`** |
 | Platform/Testing | `.cursor/rules/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
+
+### ⚠️ CRITICAL: Frontend Form Testing Requirements
+
+**MANDATORY BEFORE ANY FRONTEND PR**: When implementing or modifying forms, you MUST:
+
+1. **Click through ALL form steps** using Playwright or browser automation
+2. **Fill with mock data** to verify all fields accept input correctly
+3. **Verify Next/Submit buttons** become enabled when forms are valid
+4. **Test character counters** display and update in real-time
+5. **Test conditional fields** show/hide correctly based on user input
+6. **Document test execution** in commit message or create test evidence file
+
+**Why**: Form validation issues (like disabled Next buttons) are NOT visible in code review and require live browser testing to detect.
+
+**See**: `.cursor/rules/frontend/testing-workflow.mdc` for complete testing requirements and common issues.
+
+**Example**: Issue #2 initial implementation had Step 2 Next button disabled despite valid form data because `mode: "onChange"` was missing. This was only discovered during manual user testing.
 
 ## Key Commands
 

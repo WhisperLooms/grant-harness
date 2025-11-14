@@ -31,6 +31,7 @@ export default function Step2OrganizationPage() {
   const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step2OrganizationData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step2OrganizationSchema),
     defaultValues: formData.step2_organization || {
       abn: "",

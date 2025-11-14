@@ -31,6 +31,7 @@ export default function Step7ContactPage() {
   const { formData, updateStepData, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step7ContactData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step7ContactSchema),
     defaultValues: formData.step7_contact || {
       contactName: "",

@@ -31,6 +31,7 @@ export default function Step3BusinessPage() {
   const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step3BusinessData>({
+    mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step3BusinessSchema),
     defaultValues: formData.step3_business || {
       businessDescription: "",

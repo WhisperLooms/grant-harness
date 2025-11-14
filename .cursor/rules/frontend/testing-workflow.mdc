@@ -1,0 +1,267 @@
+# Frontend Testing Workflow
+
+**Status**: MANDATORY
+**Applies To**: All frontend form implementations
+**Created**: 2025-11-14
+**Updated**: 2025-11-14
+
+## Critical Rule: Form Testing Before PR
+
+**MANDATORY**: Before creating any PR that includes form implementations or modifications, the agent MUST:
+
+1. **Click through ALL form steps** using Playwright or browser automation
+2. **Fill with mock data** to verify all fields accept input
+3. **Verify Next/Submit buttons** become enabled when forms are valid
+4. **Test character counters** display correctly
+5. **Test conditional fields** appear/hide correctly
+6. **Document test results** in commit message or scratchpad
+
+### Why This Rule Exists
+
+**Root Cause Incident** (2025-11-14): Issue #2 implementation initially shipped without end-to-end testing. Step 2's Next button was disabled despite all fields being filled because `mode: "onChange"` was missing from React Hook Form configuration. This required post-PR emergency fix.
+
+**Impact**: User manual testing required to discover the bug, causing workflow interruption and lost confidence.
+
+**Prevention**: Mandatory automated testing before PR creation catches these issues during development.
+
+## Testing Approaches (In Priority Order)
+
+### 1. Playwright End-to-End Tests (PREFERRED)
+
+Create comprehensive Playwright tests that:
+- Navigate through all form steps
+- Fill every field with realistic mock data
+- Verify Next buttons enable after valid input
+- Test navigation between steps
+- Verify LocalStorage persistence
+- Test form submission on final step
+
+**Example**:
+```typescript
+test('complete all 7 steps with mock data', async ({ page }) => {
+  await page.goto('/applications/igp-commercialisation/step1');
+
+  // Fill Step 1
+  await page.locator('label').filter({ hasText: 'Company incorporated in Australia' }).click();
+  // ... fill all fields ...
+
+  const nextButton = page.getByRole('button', { name: /Next/ });
+  await expect(nextButton).toBeEnabled(); // CRITICAL CHECK
+  await nextButton.click();
+
+  // Continue for all steps...
+});
+```
+
+See `tests/e2e/igp-form-complete-walkthrough.spec.ts` for complete example.
+
+### 2. Playwright MCP Tools (if available)
+
+Use MCP tools for interactive testing:
+```
+mcp__Claude_Playwright__browser_navigate("http://localhost:3000")
+mcp__Claude_Playwright__browser_click("button[name='Next']")
+mcp__Claude_Playwright__browser_type("input[name='abn']", "11111111111")
+```
+
+### 3. Chrome DevTools MCP (if available)
+
+Alternative browser automation:
+```
+mcp__chrome-devtools__navigate_page("http://localhost:3000")
+mcp__chrome-devtools__click("button:has-text('Next')")
+mcp__chrome-devtools__fill("input[name='abn']", "11111111111")
+```
+
+### 4. Manual Browser Verification (FALLBACK ONLY)
+
+If automated tools unavailable:
+1. Document detailed manual test steps in scratchpad
+2. Provide exact reproduction steps for human tester
+3. Create checklist of critical verifications
+4. **DO NOT create PR** - mark as "Needs Manual Testing"
+
+## Common Form Validation Issues
+
+### Issue 1: Next Button Always Disabled
+
+**Symptom**: Next button stays disabled even when all fields filled
+
+**Root Cause**: Missing `mode` configuration in useForm
+
+**Fix**:
+```typescript
+const form = useForm<StepData>({
+  mode: "onChange", // ← ADD THIS
+  resolver: zodResolver(stepSchema),
+  defaultValues: {...},
+});
+```
+
+**Why**: React Hook Form defaults to `onSubmit` validation mode, so `formState.isValid` only updates when form is submitted, not during field changes.
+
+### Issue 2: Character Counters Not Updating
+
+**Symptom**: Character counter shows "0 / 500" even after typing
+
+**Root Cause**: Not watching the field value
+
+**Fix**:
+```typescript
+const fieldValue = form.watch("fieldName");
+
+<FormDescription>
+  {fieldValue?.length || 0} / 500 characters
+</FormDescription>
+```
+
+### Issue 3: Conditional Fields Not Appearing
+
+**Symptom**: Dependent fields don't show when trigger field changes
+
+**Root Cause**: Not watching the trigger field
+
+**Fix**:
+```typescript
+const triggerValue = form.watch("triggerField");
+
+{triggerValue === "yes" && (
+  <FormField name="dependentField" ... />
+)}
+```
+
+## Testing Checklist
+
+Before creating PR, verify:
+
+### Form Validation
+- [ ] All required fields validated correctly
+- [ ] Optional fields allow empty values
+- [ ] Error messages display for invalid input
+- [ ] Cross-field validation works (e.g., budget totals)
+
+### Navigation
+- [ ] Next button disabled when form invalid
+- [ ] Next button enabled when form valid
+- [ ] Next button navigates to correct step
+- [ ] Previous button returns to previous step
+- [ ] Progress indicator shows correct step
+
+### Character Limits
+- [ ] All textareas have character counters
+- [ ] Character counters update in real-time
+- [ ] Forms reject input exceeding limits
+- [ ] Min/max character requirements enforced
+
+### Conditional Fields
+- [ ] Conditional fields hidden by default (if applicable)
+- [ ] Conditional fields appear when trigger selected
+- [ ] Conditional field validation only applies when visible
+
+### Data Persistence
+- [ ] Form data saves to LocalStorage on field change
+- [ ] Form data restores after page reload
+- [ ] Navigation preserves data across steps
+
+### Accessibility
+- [ ] All form fields have labels
+- [ ] Error messages associated with fields
+- [ ] Keyboard navigation works
+- [ ] Screen reader friendly
+
+## Integration with CI/CD
+
+### Local Development
+```bash
+# Before committing
+npm run test:e2e:headed  # Visual confirmation
+
+# Before PR
+npm run test:e2e         # Headless full suite
+npm run lint             # Code quality
+npm run build            # Production build check
+```
+
+### GitHub Actions (Future)
+```yaml
+# .github/workflows/frontend-tests.yml
+- name: Run E2E Tests
+  run: npx playwright test
+
+- name: Upload Test Results
+  if: failure()
+  uses: actions/upload-artifact@v3
+  with:
+    name: playwright-report
+    path: playwright-report/
+```
+
+## Mock Data Standards
+
+### Realistic Test Data
+
+Use realistic Australian business data:
+- **ABN**: 11 digits (e.g., "11111111111")
+- **State**: NSW, VIC, QLD, SA, WA, TAS, NT, ACT
+- **Postcode**: 4 digits (e.g., "2000" for Sydney)
+- **Phone**: Mobile format "04xxxxxxxx" or landline "0x xxxx xxxx"
+- **Email**: Valid format with proper domain
+- **Financial**: Reasonable ranges for business size
+  - Startup: $100k-$1M revenue
+  - SME: $1M-$20M revenue
+  - Enterprise: $20M+ revenue
+
+### Character Limit Testing
+
+Test edge cases:
+- **Minimum length**: Exactly at minimum (e.g., 50 chars)
+- **Maximum length**: Exactly at maximum (e.g., 500 chars)
+- **Below minimum**: Should show validation error
+- **Above maximum**: Should prevent input or show error
+
+### Conditional Logic Testing
+
+Test all paths:
+- **Yes/No fields**: Test both options
+- **Select fields**: Test each significant option
+- **Checkboxes**: Test checked and unchecked states
+
+## Debugging Failed Tests
+
+### Playwright Screenshots
+```typescript
+test('my test', async ({ page }) => {
+  await page.screenshot({ path: 'debug-step1.png' });
+  // ... test code ...
+});
+```
+
+### Playwright Trace
+```bash
+npx playwright test --trace on
+npx playwright show-trace trace.zip
+```
+
+### Console Logging
+```typescript
+page.on('console', msg => console.log('Browser:', msg.text()));
+page.on('pageerror', error => console.error('Error:', error));
+```
+
+## Related ADRs
+
+- **ADR-1001**: React Hook Form + Shadcn UI Foundation
+- **ADR-1002**: Schema-Driven Form Generation
+- **ADR-1003**: Multi-Step Form State Management
+- **ADR-1006**: URL-Based Form Navigation
+
+## References
+
+- [React Hook Form - Mode](https://react-hook-form.com/docs/useform#mode)
+- [Playwright Testing](https://playwright.dev/docs/intro)
+- [Shadcn UI Form Components](https://ui.shadcn.com/docs/components/form)
+
+---
+
+**Last Updated**: 2025-11-14
+**Next Review**: Before Issue #3 (AI Population & Review)
