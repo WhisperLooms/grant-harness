@@ -1,8 +1,11 @@
 # Issue #2: Dual-Format Form Concept - Government vs Collaboration Mode
 
 **Date**: 2025-11-13
-**Status**: Concept Documentation (Not Yet Implemented)
+**Status**: Concept Documentation (Not Yet Implemented - **Create a NEW ISSUE to implement**)
 **Purpose**: Define two distinct form experiences for different use cases
+
+**In Scope** Document this requirement in a new gh issue AND link to this issue.
+**Out of Scope** Do not try and complete the development of the second format page in this Issue.
 
 ---
 
