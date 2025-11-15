@@ -112,6 +112,7 @@ graph TD
     Phase2 --> End([End: Production MVP<br/>5-10 companies using platform])
 
     classDef week1 fill:#e1f5e1,stroke:#4caf50,stroke-width:2px
+    classDef week2Complete fill:#c8e6c9,stroke:#4caf50,stroke-width:2px
     classDef week2 fill:#bbdefb,stroke:#2196f3,stroke-width:2px
     classDef week3 fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
     classDef week4 fill:#ffccbc,stroke:#ff9800,stroke-width:2px
@@ -119,7 +120,7 @@ graph TD
     classDef decision fill:#ffebee,stroke:#f44336,stroke-width:3px
 
     class Week1 week1
-    class Week2 week2
+    class Week2 week2Complete
     class Week3 week3
     class Week4 week4
     class Phase2 phase2
@@ -133,8 +134,8 @@ graph TD
 **See `.docs/specs/github-issues-update-plan.md` for complete recalibration details and copy-paste ready issue descriptions.**
 
 ### New Priority Order (Phase 1, Weeks 1-4)
-1. **Issue #1**: Grant & Company Ingestion (Week 1) - Simplified bootstrap with EMEW docs
-2. **Issue #2**: Application Form Replication (Week 2) - NextJS forms (was Issue #4)
+1. **Issue #1**: Grant & Company Ingestion (Week 1) - Simplified bootstrap with EMEW docs ✅ **COMPLETED**
+2. **Issue #2**: Application Form Replication (Week 2) - NextJS forms (was Issue #4) ✅ **COMPLETED**
 3. **Issue #3**: AI-Powered Population & Review (Week 3) - Auto-fill + review workflow (was Issue #5)
 4. **Issue #4**: Collaboration & Export (Week 4) - Signoff + PDF export (was Issue #6)
 
@@ -309,8 +310,15 @@ Commands:
 
 ---
 
-**Last Updated**: 2025-11-12
-**Current Phase**: Phase 0 Complete - Ready for Week 1 (Grant & Company Ingestion)
-**Next Milestone**: Week 1 - EMEW Bootstrap & Grant Matching (Issue #1)
+**Last Updated**: 2025-11-15
+**Current Phase**: Week 2 Complete - Application Form Replication (Issue #2) COMPLETED
+**Next Milestone**: Week 3 - AI-Powered Population & Review (Issue #3)
 **Strategic Priority**: Application Assistance > Grant Discovery (ADR-0003)
 **Week 4 Success Metric**: Demo <2 hour application completion vs 10+ hours manual
+
+## Recently Completed
+
+| Issue | Title | Completed | Merged PR | Key Deliverables |
+|-------|-------|-----------|-----------|------------------|
+| #2 | Application Form Replication (Week 2) | 2025-11-15 | [PR #11](https://github.com/WhisperLooms/grant-harness/pull/11) | Full 7-step IGP form, React Hook Form + Shadcn UI, E2E testing with Playwright MCP, Test evidence documentation |
+| #1 | Grant & Company Ingestion (Week 1) | 2025-11-12 | [PR #9](https://github.com/WhisperLooms/grant-harness/pull/9) | Gemini dual-corpus architecture, EMEW profile ingestion, Grant matching with RAG |
