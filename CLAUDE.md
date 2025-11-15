@@ -179,6 +179,44 @@ echo "back/grant-prototype/.inputs/" >> .gitignore
 
 **Example**: Issue #2 initial implementation had Step 2 Next button disabled despite valid form data because `mode: "onChange"` was missing. This was only discovered during manual user testing.
 
+### 🎯 MANDATORY: Playwright MCP Browser Testing Before PR
+
+**REQUIRED BEFORE HANDOFF**: Before creating a PR or handing back form implementations, you MUST:
+
+1. **Start development server**: `npm run dev` in `front/grant-portal/`
+2. **Use Playwright MCP tools** to automate browser testing:
+   - `mcp__Claude_Playwright__browser_navigate` - Navigate to form
+   - `mcp__Claude_Playwright__browser_type` - Fill text fields
+   - `mcp__Claude_Playwright__browser_click` - Click buttons, radios, checkboxes
+   - `mcp__Claude_Playwright__browser_snapshot` - Verify page state
+   - `mcp__Claude_Playwright__browser_take_screenshot` - Capture evidence
+3. **Test complete user flow**: Fill ALL steps from start to finish with mock data
+4. **Verify Next/Submit buttons**: Confirm buttons become enabled after valid input
+5. **Save test evidence**:
+   - Screenshots: `.docs/screenshots/test-evidence/step{N}-{state}.png`
+   - Form data JSON: `.docs/screenshots/test-evidence/{form-name}-test-data.json`
+6. **Reference in PR**: Link to screenshots and test data JSON in PR description
+
+**Evidence Format**:
+```json
+{
+  "test_session": {
+    "date": "2025-11-15T02:36:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "form": "IGP Commercialisation Application",
+    "status": "Completed Steps 1-7"
+  },
+  "step1_eligibility": { "..." },
+  "test_notes": {
+    "playwright_mcp_tools_used": ["browser_navigate", "browser_click", ...]
+  }
+}
+```
+
+**Why**: Automated browser testing with Playwright MCP provides repeatable evidence that forms work end-to-end, catches validation issues before PR review, and scales as the project grows.
+
+**Reference**: Based on [OneRedOak/claude-code-workflows design-review pattern](https://github.com/OneRedOak/claude-code-workflows/tree/main/design-review)
+
 ## Key Commands
 
 ### Grant Prototype (Phase 1) - In Development

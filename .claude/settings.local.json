@@ -140,7 +140,8 @@
       "Bash(find:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue list:*)",
-      "mcp__Claude_github-WhisperLooms__list_issues"
+      "mcp__Claude_github-WhisperLooms__list_issues",
+      "mcp__Claude_Playwright__browser_run_code"
     ],
     "deny": [],
     "ask": []

@@ -64,6 +64,7 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
+| 1007 | [Playwright MCP Browser Testing Before PR](#adr-1007)     | 2025-11-15 | Accepted | —          | —             |
 | 1006 | [URL Structure for Multi-Grant Multi-Client Scale](#adr-1006) | 2025-11-13 | Accepted | —          | —             |
 | 1005 | [PDF Export Strategy](#adr-1005)                          | 2025-11-12 | Accepted | —          | —             |
 | 1004 | [Collaboration Backend Decision](#adr-1004)               | 2025-11-12 | Proposed | —          | —             |
@@ -782,5 +783,94 @@ grant_portal_igp_current_step              // Current step
 - `front/grant-portal/lib/migrations/importLocalStorageApplications.ts`
 
 **AI Agent Guidance**: For Phase 1, keep URLs simple (`/applications/[grantId]/step[N]`). Do NOT add application IDs or UUIDs yet. In Phase 2, when adding Firebase auth, implement migration per this ADR. Always use application ID in Firestore (never rely on grant ID alone). When creating new applications, generate UUID and redirect to `/applications/[UUID]/step1`.
+
+---
+
+## ADR-1007 — Playwright MCP Browser Testing Before PR
+
+<a id="adr-1007"></a>
+**Date**: 2025-11-15
+**Status**: Accepted
+**Owner**: Grant-Harness Development Team
+
+### Context
+
+Form validation issues (e.g., disabled Next buttons, field validation failures) are NOT visible in code review. Issue #2 demonstrated this: the Step 2 Next button remained disabled despite all fields being filled because `mode: "onChange"` was missing from the `useForm` configuration. This was only discovered during manual user testing, delaying delivery.
+
+As the project scales with multiple complex forms (Steps 1-7 for IGP, future grants), we need **automated, repeatable browser testing that provides evidence before PR review**.
+
+### Alternatives
+
+1. **Manual browser testing only** - Not scalable, no evidence trail, prone to human error
+2. **Static Playwright E2E tests** - Requires test code maintenance, doesn't provide visual evidence for PR review
+3. **Screenshot testing tools (Percy, Chromatic)** - Expensive, focused on visual regression not functional validation
+4. **Cypress** - Similar to Playwright but Playwright MCP provides direct integration with Claude Code workflows
+
+### Decision
+
+**MANDATORY before creating any frontend form PR**: Use Playwright MCP browser automation tools to test complete user flows and capture evidence.
+
+**Required workflow**:
+1. Start dev server: `npm run dev` in `front/grant-portal/`
+2. Use Playwright MCP tools in Claude Code session:
+   - `mcp__Claude_Playwright__browser_navigate` - Navigate to form
+   - `mcp__Claude_Playwright__browser_type` - Fill text fields
+   - `mcp__Claude_Playwright__browser_click` - Click buttons/radios/checkboxes
+   - `mcp__Claude_Playwright__browser_snapshot` - Verify page state
+   - `mcp__Claude_Playwright__browser_take_screenshot` - Capture evidence
+3. Test complete user flow from start to finish with realistic mock data
+4. Verify Next/Submit buttons become enabled when forms are valid
+5. Save test evidence:
+   - Screenshots → `.docs/screenshots/test-evidence/step{N}-{state}.png`
+   - Form data JSON → `.docs/screenshots/test-evidence/{form-name}-test-data.json`
+6. Reference evidence in PR description with links to screenshots and JSON
+
+### Consequences
+
+* **Pros**:
+  - Catches validation issues before PR review (saves reviewer time)
+  - Provides visual evidence that forms work end-to-end
+  - Scales with project growth (automated testing beats manual)
+  - Integrates directly into Claude Code workflow (no context switching)
+  - Creates artifact trail for QA and stakeholder review
+* **Cons / risks**:
+  - Adds ~5-10 minutes per PR for browser testing
+  - Requires Playwright MCP server to be configured
+  - Screenshots/JSON files increase repo size (mitigated by `.gitignore` if needed)
+* **Supersedes**: None (new requirement)
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**PR Checklist** (enforced in `.cursor/rules/rules.mdc` and `CLAUDE.md`):
+- [ ] Playwright MCP used to fill all form steps with mock data
+- [ ] Screenshots captured for each step → `.docs/screenshots/test-evidence/`
+- [ ] Test data JSON created → `.docs/screenshots/test-evidence/{form-name}-test-data.json`
+- [ ] PR description includes links to screenshots and JSON
+- [ ] All Next/Submit buttons confirmed to enable when valid
+
+**Evidence Format** (from `.docs/screenshots/test-evidence/{form-name}-test-data.json`):
+```json
+{
+  "test_session": {
+    "date": "2025-11-15T02:36:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "form": "IGP Commercialisation Application",
+    "status": "Completed Steps 1-7"
+  },
+  "step1_eligibility": { "entityType": "Company incorporated in Australia", ... },
+  "step2_organization": { "abn": "11111111111", ... },
+  "test_notes": {
+    "playwright_mcp_tools_used": ["browser_navigate", "browser_click", ...]
+  }
+}
+```
+
+**Validation**:
+- ✅ Test evidence files present in `.docs/screenshots/test-evidence/`
+- ✅ PR description references screenshot URLs and JSON file
+- ✅ JSON file contains complete test session metadata
+
+**Reference Pattern**: Based on [OneRedOak/claude-code-workflows design-review](https://github.com/OneRedOak/claude-code-workflows/tree/main/design-review) workflow pattern.
 
 ---

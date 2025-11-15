@@ -1,0 +1,68 @@
+{
+  "test_session": {
+    "date": "2025-11-15T02:36:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "form": "IGP Commercialisation Application",
+    "test_type": "End-to-end form population with browser automation",
+    "status": "Steps 1-2 completed with screenshots"
+  },
+  "step1_eligibility": {
+    "entityType": "Company incorporated in Australia",
+    "advisoryServiceReport": "No",
+    "nonTaxExempt": "Yes, we are non-tax-exempt",
+    "gstRegistered": "Yes",
+    "nrfPriorityArea": "Yes",
+    "annualTurnoverUnder20M": "Yes",
+    "ipOwnership": "Yes",
+    "coFundingEvidence": "Yes",
+    "screenshot": ".docs/screenshots/test-evidence/step1-completed.png"
+  },
+  "step2_organization": {
+    "abn": "11111111111",
+    "legalEntityName": "EMEW Technologies Pty Ltd",
+    "tradingName": "EMEW",
+    "businessAddress": {
+      "street": "5 Waterview Crescent",
+      "suburb": "Tascott",
+      "state": "NSW",
+      "postcode": "2250"
+    },
+    "postalAddressSameAsBusiness": true,
+    "financialInformation": {
+      "mostRecentYearTurnover": 5000000,
+      "mostRecentYearTotalAssets": 1000000,
+      "existedCompleteFinancialYear": "Yes",
+      "previousYearTurnover": 4500000,
+      "previousYearTotalAssets": 900000
+    },
+    "employment": {
+      "numberOfEmployees": 30,
+      "numberOfContractors": 5
+    },
+    "diversityInformation": {
+      "indigenousOwnership": "No"
+    },
+    "screenshot": ".docs/screenshots/test-evidence/step2-filled.png"
+  },
+  "test_notes": {
+    "steps_completed": 2,
+    "total_steps": 7,
+    "validation_mode_fix": "Form configured with mode: 'onChange' for real-time validation",
+    "next_button_step1": "Enabled after all fields filled (verified)",
+    "next_button_step2": "All fields filled, awaiting further investigation",
+    "playwright_mcp_tools_used": [
+      "browser_navigate",
+      "browser_click",
+      "browser_type",
+      "browser_snapshot",
+      "browser_take_screenshot",
+      "browser_console_messages"
+    ]
+  },
+  "mock_data_source": {
+    "company": "EMEW Technologies Pty Ltd",
+    "industry": "Metal recovery and recycling",
+    "location": "Tascott, NSW",
+    "reference": "Based on EMEW corporate profile from .docs/context/emew-context/"
+  }
+}
