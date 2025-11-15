@@ -159,8 +159,66 @@ echo "back/grant-prototype/.inputs/" >> .gitignore
 |--------------|-----------|-----------|
 | `back/grant-prototype/` | `.cursor/rules/backend/grant-prototype/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
 | `back/grant-adk/` (future) | `.cursor/rules/backend/ADR.mdc` | `.cursor/rules/backend/workflow.mdc` |
-| `front/grant-portal/` (future) | `.cursor/rules/frontend/ADR.mdc` | `.cursor/rules/frontend/workflow.mdc` |
+| `front/grant-portal/` (future) | `.cursor/rules/frontend/ADR.mdc` | `.cursor/rules/frontend/workflow.mdc` + **`.cursor/rules/frontend/testing-workflow.mdc`** |
 | Platform/Testing | `.cursor/rules/ADR.mdc` | `.docs/specs/Grant-Harness_Repository-Initiation-Plan.md` |
+
+### ⚠️ CRITICAL: Frontend Form Testing Requirements
+
+**MANDATORY BEFORE ANY FRONTEND PR**: When implementing or modifying forms, you MUST:
+
+1. **Click through ALL form steps** using Playwright or browser automation
+2. **Fill with mock data** to verify all fields accept input correctly
+3. **Verify Next/Submit buttons** become enabled when forms are valid
+4. **Test character counters** display and update in real-time
+5. **Test conditional fields** show/hide correctly based on user input
+6. **Document test execution** in commit message or create test evidence file
+
+**Why**: Form validation issues (like disabled Next buttons) are NOT visible in code review and require live browser testing to detect.
+
+**See**: `.cursor/rules/frontend/testing-workflow.mdc` for complete testing requirements and common issues.
+
+**Example**: Issue #2 initial implementation had Step 2 Next button disabled despite valid form data because `mode: "onChange"` was missing. This was only discovered during manual user testing.
+
+### 🎯 MANDATORY: Playwright MCP Browser Testing Before PR
+
+**REQUIRED BEFORE HANDOFF**: Before creating a PR or handing back form implementations, you MUST:
+
+1. **Start development server**: `npm run dev` in `front/grant-portal/`
+2. **Use Playwright MCP tools** to automate browser testing:
+   - `mcp__Claude_Playwright__browser_navigate` - Navigate to form
+   - `mcp__Claude_Playwright__browser_type` - Fill text fields
+   - `mcp__Claude_Playwright__browser_click` - Click buttons, radios, checkboxes
+   - `mcp__Claude_Playwright__browser_snapshot` - Verify page state
+   - `mcp__Claude_Playwright__browser_take_screenshot` - Capture evidence
+3. **Test complete user flow**: Fill ALL steps from start to finish with mock data
+4. **Verify Next/Submit buttons**: Confirm buttons become enabled after valid input
+5. **CLICK SUBMIT BUTTON AND CAPTURE DATA OUTCOME**: Click the final Submit button and document what happens (alert message, localStorage save, API response, etc.)
+6. **Save test evidence**:
+   - Screenshots: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/step{N}-{state}.png`
+   - Submission screenshot: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/submit-confirmation.png`
+   - Form data JSON: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/form-data.json`
+   - Metadata JSON: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/metadata.json`
+7. **Reference in PR**: Link to test session folder with all evidence in PR description
+
+**Evidence Format**:
+```json
+{
+  "test_session": {
+    "date": "2025-11-15T02:36:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "form": "IGP Commercialisation Application",
+    "status": "Completed Steps 1-7"
+  },
+  "step1_eligibility": { "..." },
+  "test_notes": {
+    "playwright_mcp_tools_used": ["browser_navigate", "browser_click", ...]
+  }
+}
+```
+
+**Why**: Automated browser testing with Playwright MCP provides repeatable evidence that forms work end-to-end, catches validation issues before PR review, and scales as the project grows.
+
+**Reference**: Based on [OneRedOak/claude-code-workflows design-review pattern](https://github.com/OneRedOak/claude-code-workflows/tree/main/design-review)
 
 ## Key Commands
 

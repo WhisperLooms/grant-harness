@@ -115,3 +115,7 @@ Thumbs.db
 .DS_Store
 *.bak
 *.swp
+
+# Windows command redirection artifacts
+nul
+.playwright-mcp/

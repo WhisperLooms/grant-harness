@@ -1,0 +1,145 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - progressbar [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e11]: "1"
+          - generic [ref=e12]: Eligibility Check
+        - generic [ref=e13]:
+          - generic [ref=e15]: "2"
+          - generic [ref=e16]: Organization Details
+        - generic [ref=e17]:
+          - generic [ref=e19]: "3"
+          - generic [ref=e20]: Business Information
+        - generic [ref=e21]:
+          - generic [ref=e23]: "4"
+          - generic [ref=e24]: Project Overview
+        - generic [ref=e25]:
+          - generic [ref=e27]: "5"
+          - generic [ref=e28]: Project Budget
+        - generic [ref=e29]:
+          - generic [ref=e31]: "6"
+          - generic [ref=e32]: Assessment Criteria
+        - generic [ref=e33]:
+          - generic [ref=e35]: "7"
+          - generic [ref=e36]: Contact & Declaration
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]: "Step 1: Eligibility Check"
+        - generic [ref=e40]: Confirm your organization meets the basic eligibility criteria for the Industry Growth Program
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - text: What is your entity type?
+          - radiogroup [ref=e44]:
+            - generic [ref=e45]:
+              - radio "Company incorporated in Australia" [ref=e46] [cursor=pointer]
+              - radio
+              - generic [ref=e47] [cursor=pointer]: Company incorporated in Australia
+            - generic [ref=e48]:
+              - radio "Cooperative" [ref=e49] [cursor=pointer]
+              - radio
+              - generic [ref=e50] [cursor=pointer]: Cooperative
+            - generic [ref=e51]:
+              - radio "Incorporated trustee on behalf of a trust" [ref=e52] [cursor=pointer]
+              - radio
+              - generic [ref=e53] [cursor=pointer]: Incorporated trustee on behalf of a trust
+        - generic [ref=e54]:
+          - text: Have you received an Industry Growth Program Advisory Service Report?
+          - paragraph [ref=e55]: If you have completed the Advisory Service, you may be eligible for additional support
+          - radiogroup [ref=e56]:
+            - generic [ref=e57]:
+              - radio "Yes" [ref=e58] [cursor=pointer]
+              - radio
+              - generic [ref=e59] [cursor=pointer]: "Yes"
+            - generic [ref=e60]:
+              - radio "No" [ref=e61] [cursor=pointer]
+              - radio
+              - generic [ref=e62] [cursor=pointer]: "No"
+        - generic [ref=e63]:
+          - text: Is your organization non-tax-exempt?
+          - paragraph [ref=e64]: Tax-exempt organizations are not eligible for this program
+          - radiogroup [ref=e65]:
+            - generic [ref=e66]:
+              - radio "Yes, we are non-tax-exempt" [ref=e67] [cursor=pointer]
+              - radio
+              - generic [ref=e68] [cursor=pointer]: Yes, we are non-tax-exempt
+            - generic [ref=e69]:
+              - radio "No, we are tax-exempt" [ref=e70] [cursor=pointer]
+              - radio
+              - generic [ref=e71] [cursor=pointer]: No, we are tax-exempt
+        - generic [ref=e72]:
+          - text: Is your organization registered for GST?
+          - radiogroup [ref=e73]:
+            - generic [ref=e74]:
+              - radio "Yes" [ref=e75] [cursor=pointer]
+              - radio
+              - generic [ref=e76] [cursor=pointer]: "Yes"
+            - generic [ref=e77]:
+              - radio "No" [ref=e78] [cursor=pointer]
+              - radio
+              - generic [ref=e79] [cursor=pointer]: "No"
+        - generic [ref=e80]:
+          - text: Do you have an innovative product/service in a National Reconstruction Fund (NRF) priority area?
+          - paragraph [ref=e81]: "NRF priority areas include: Resources, Agriculture, Transport, Medical Science, Renewables, Defence, and Enabling Capabilities"
+          - radiogroup [ref=e82]:
+            - generic [ref=e83]:
+              - radio "Yes" [ref=e84] [cursor=pointer]
+              - radio
+              - generic [ref=e85] [cursor=pointer]: "Yes"
+            - generic [ref=e86]:
+              - radio "No" [ref=e87] [cursor=pointer]
+              - radio
+              - generic [ref=e88] [cursor=pointer]: "No"
+        - generic [ref=e89]:
+          - text: Is your annual turnover under $20 million?
+          - radiogroup [ref=e90]:
+            - generic [ref=e91]:
+              - radio "Yes" [ref=e92] [cursor=pointer]
+              - radio
+              - generic [ref=e93] [cursor=pointer]: "Yes"
+            - generic [ref=e94]:
+              - radio "No" [ref=e95] [cursor=pointer]
+              - radio
+              - generic [ref=e96] [cursor=pointer]: "No"
+        - generic [ref=e97]:
+          - text: Does your organization own or have rights to the intellectual property (IP)?
+          - radiogroup [ref=e98]:
+            - generic [ref=e99]:
+              - radio "Yes" [ref=e100] [cursor=pointer]
+              - radio
+              - generic [ref=e101] [cursor=pointer]: "Yes"
+            - generic [ref=e102]:
+              - radio "No" [ref=e103] [cursor=pointer]
+              - radio
+              - generic [ref=e104] [cursor=pointer]: "No"
+        - generic [ref=e105]:
+          - text: Can you provide evidence of co-funding for the project?
+          - paragraph [ref=e106]: You must contribute at least 50% of the total project costs
+          - radiogroup [ref=e107]:
+            - generic [ref=e108]:
+              - radio "Yes" [ref=e109] [cursor=pointer]
+              - radio
+              - generic [ref=e110] [cursor=pointer]: "Yes"
+            - generic [ref=e111]:
+              - radio "No" [ref=e112] [cursor=pointer]
+              - radio
+              - generic [ref=e113] [cursor=pointer]: "No"
+        - generic [ref=e114]:
+          - button "Previous" [disabled]:
+            - img
+            - text: Previous
+          - generic [ref=e115]:
+            - button "Save Draft" [ref=e116] [cursor=pointer]:
+              - img
+              - text: Save Draft
+            - button "Next" [disabled]:
+              - text: Next
+              - img
+  - button "Open Next.js Dev Tools" [ref=e122] [cursor=pointer]:
+    - img [ref=e123]
+  - alert [ref=e126]
+```

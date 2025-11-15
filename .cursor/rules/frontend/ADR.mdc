@@ -64,6 +64,9 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
+| 1008 | [Test Evidence Organization by Grant](#adr-1008)          | 2025-11-15 | Accepted | —          | —             |
+| 1007 | [Playwright MCP Browser Testing Before PR](#adr-1007)     | 2025-11-15 | Accepted | —          | —             |
+| 1006 | [URL Structure for Multi-Grant Multi-Client Scale](#adr-1006) | 2025-11-13 | Accepted | —          | —             |
 | 1005 | [PDF Export Strategy](#adr-1005)                          | 2025-11-12 | Accepted | —          | —             |
 | 1004 | [Collaboration Backend Decision](#adr-1004)               | 2025-11-12 | Proposed | —          | —             |
 | 1003 | [Multi-Step Form State Management](#adr-1003)             | 2025-11-12 | Accepted | —          | —             |
@@ -71,6 +74,8 @@ END ADR_AGENT_PROTOCOL
 | 1001 | [React Hook Form + Shadcn UI Foundation](#adr-1001)       | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
+
+<!-- REMEMBER: When adding new ADR, also update Index table above! -->
 
 ---
 
@@ -147,16 +152,32 @@ Week 2-4 prototype requires replicating government grant application forms in Ne
 
 Use **React Hook Form + Shadcn UI** as the foundation for all grant application forms:
 
+**Core Tech Stack**:
+- **Next.js 15.x** (App Router) - Latest stable version with React 19 support
+- **React 19.x** - Modern React with concurrent features and improved form handling
+- **TypeScript 5.1+** - Type safety and developer experience
+- **Node.js 20.9+** - Required for Next.js 15
+- **Tailwind CSS 3.4+** - Utility-first CSS framework (via Shadcn UI)
+
+**Rationale for Next.js 15**:
+- React 19 compatibility (v16 too new/unstable, v14 stuck on React 18)
+- Stable ecosystem support (Shadcn UI fully compatible)
+- Modern App Router features (async components, server actions)
+- Active LTS with security updates through 2025
+- Avoids breaking changes in v16 (async params, AMP removal)
+
 **React Hook Form** (form state management):
 - Uncontrolled components for performance
 - Zod resolver for validation from schemas
 - Watch API for conditional fields
+- Client-side validation (compatible with React 19)
 
 **Shadcn UI** (component library):
 - Tailwind-based components (easy to customize for government styling)
 - Accessible by default (WCAG compliance)
 - Copy-paste components (not a dependency - full control)
 - Form components: Input, Textarea, Select, Radio Group, Checkbox
+- React 19 compatible (tested with latest release)
 
 **Base template**: Clone `shadcn-nextjs-multistep-form-example` (https://github.com/63r6o/shadcn-nextjs-multistep-form-example) as starting point
 
@@ -620,5 +641,501 @@ POST /api/applications/{id}/export?format=pdf
 ```
 
 **AI Agent Guidance**: Use react-pdf for PDF generation. Create template in `lib/pdf/templates/{grant-id}PDF.tsx` for each grant. Render form data into PDF template. For prototype, PDF is for stakeholder review and portal upload (not automated submission). In Phase 3, consider Playwright for automated portal submission (only for grants that permit it).
+
+---
+
+## ADR-1006 — URL Structure for Multi-Grant Multi-Client Scale
+
+<a id="adr-1006"></a>
+**Date**: 2025-11-13
+**Status**: Accepted
+**Owner**: Grant-Harness Team
+
+### Context
+
+Phase 1 prototype uses URL structure `/applications/igp-commercialisation/step1` which is grant-specific. This works for demonstrating the form pattern but doesn't scale to production requirements:
+
+**Scalability Problems**:
+1. **Multiple grants**: Platform will have 50-100+ different grants, each needs unique forms
+2. **Multiple clients per grant**: Same grant (e.g., IGP) will have 10-50+ companies applying simultaneously
+3. **Multiple applications per client**: Each company may apply to 5-10 grants, need to distinguish between applications
+4. **Resume vs New**: Need to differentiate "start new application" vs "resume existing application"
+
+**Current Limitations**:
+- No way to distinguish between applications from different companies
+- No UUID/ID to identify specific application instances
+- LocalStorage key is grant-specific, not application-specific
+- No dashboard to list user's applications
+
+### Alternatives
+
+**Option 1: Keep current structure (Prototype only)**:
+- `/applications/[grantId]/step[N]`
+- Pros: Simple for prototype, no refactoring needed
+- Cons: Doesn't scale, migration required in Phase 2
+
+**Option 2: Add application ID immediately**:
+- `/applications/[applicationId]/step[N]`
+- Pros: Scalable from day 1, no migration needed
+- Cons: Premature optimization, adds complexity to prototype (no user accounts yet)
+
+**Option 3: Hybrid approach - prep for migration (chosen)**:
+- **Phase 1 (Prototype)**: Keep `/applications/[grantId]/step[N]`
+- **Phase 2 (Production)**: Migrate to `/applications/[applicationId]/step[N]`
+- Pros: Simple now, clear migration path
+- Cons: One-time migration effort (acceptable)
+
+### Decision
+
+**Phase 1 URL Structure** (Current - No changes):
+```
+/applications/igp-commercialisation/step1
+/applications/igp-commercialisation/step2
+...
+/applications/bbi-initiative/step1
+```
+
+**LocalStorage keys**:
+```typescript
+grant_portal_igp_commercialisation_form    // Form data
+grant_portal_igp_current_step              // Current step
+```
+
+**Phase 2 URL Structure** (Future - when Firebase auth added):
+```
+/applications/new/[grantId]              → Redirect to /applications/[newUUID]/step1
+/applications/[applicationId]/step[N]    → Resume existing application
+/dashboard/applications                   → List all user's applications
+```
+
+**Migration Path**:
+1. Add Firebase Authentication (user accounts)
+2. Create `applications` collection in Firestore with schema:
+   ```typescript
+   {
+     id: UUID,                    // Application ID
+     userId: string,              // Owner
+     grantId: string,             // e.g., "igp-commercialisation"
+     companyId: string,           // e.g., "c-emew"
+     status: "draft" | "submitted" | "approved",
+     currentStep: number,
+     formData: {...},             // All steps
+     createdAt: timestamp,
+     updatedAt: timestamp
+   }
+   ```
+3. When user signs up, detect LocalStorage applications → prompt to import:
+   ```typescript
+   const localApps = detectLocalStorageApplications(); // [{grantId: "igp-commercialisation", formData: {...}}]
+   if (localApps.length > 0) {
+     showImportPrompt("We found 2 draft applications. Import them?");
+     // Create Firestore documents with new UUIDs
+   }
+   ```
+4. Update routing:
+   ```typescript
+   // Old URL redirect
+   /applications/igp-commercialisation/step1
+     → Redirect to /applications/new/igp-commercialisation
+     → Create new application UUID
+     → Redirect to /applications/{newUUID}/step1
+
+   // New URL pattern
+   /applications/[applicationId]/step[N]  ← Primary pattern
+   ```
+
+**Benefits of delayed migration**:
+- Prototype stays simple (no UUID generation, no database)
+- Form pattern proven before scaling complexity
+- LocalStorage → Firestore migration is one-time operation
+- URL structure change is backward-compatible (old URLs redirect)
+
+### Consequences
+
+* **Pros**:
+  - Prototype complexity minimized (focus on form pattern)
+  - Clear migration path documented
+  - LocalStorage data preserved (imported to Firestore in Phase 2)
+  - URL pattern extensible (supports 100+ grants, 1000+ applications)
+
+* **Cons / risks**:
+  - One-time migration effort in Phase 2 (acceptable: ~1-2 days)
+  - Old URLs will need redirects (mitigated: automatic redirect)
+  - Users with draft applications must import manually (mitigated: auto-detect and prompt)
+
+* **Supersedes**: —
+
+### Compliance / Verification
+
+**Phase 1 (Current)**:
+- ✅ URLs follow pattern: `/applications/[grantId]/step[N]`
+- ✅ LocalStorage keys include grant ID
+- ✅ No application ID or user ID required
+
+**Phase 2 (Migration checklist)**:
+- [ ] Firebase Authentication configured
+- [ ] Firestore `applications` collection created
+- [ ] LocalStorage detection and import flow implemented
+- [ ] URL routing updated to `/applications/[applicationId]/step[N]`
+- [ ] Old URLs redirect to new pattern
+- [ ] Dashboard page created (`/dashboard/applications`)
+
+**Evidence Files** (Phase 2):
+- `front/grant-portal/app/(protected)/applications/[applicationId]/step[N]/page.tsx`
+- `front/grant-portal/app/(protected)/dashboard/applications/page.tsx`
+- `front/grant-portal/lib/migrations/importLocalStorageApplications.ts`
+
+**AI Agent Guidance**: For Phase 1, keep URLs simple (`/applications/[grantId]/step[N]`). Do NOT add application IDs or UUIDs yet. In Phase 2, when adding Firebase auth, implement migration per this ADR. Always use application ID in Firestore (never rely on grant ID alone). When creating new applications, generate UUID and redirect to `/applications/[UUID]/step1`.
+
+---
+
+## ADR-1007 — Playwright MCP Browser Testing Before PR
+
+<a id="adr-1007"></a>
+**Date**: 2025-11-15
+**Status**: Accepted
+**Owner**: Grant-Harness Development Team
+
+### Context
+
+Form validation issues (e.g., disabled Next buttons, field validation failures) are NOT visible in code review. Issue #2 demonstrated this: the Step 2 Next button remained disabled despite all fields being filled because `mode: "onChange"` was missing from the `useForm` configuration. This was only discovered during manual user testing, delaying delivery.
+
+As the project scales with multiple complex forms (Steps 1-7 for IGP, future grants), we need **automated, repeatable browser testing that provides evidence before PR review**.
+
+### Alternatives
+
+1. **Manual browser testing only** - Not scalable, no evidence trail, prone to human error
+2. **Static Playwright E2E tests** - Requires test code maintenance, doesn't provide visual evidence for PR review
+3. **Screenshot testing tools (Percy, Chromatic)** - Expensive, focused on visual regression not functional validation
+4. **Cypress** - Similar to Playwright but Playwright MCP provides direct integration with Claude Code workflows
+
+### Decision
+
+**MANDATORY before creating any frontend form PR**: Use Playwright MCP browser automation tools to test complete user flows and capture evidence.
+
+**Required workflow**:
+1. Start dev server: `npm run dev` in `front/grant-portal/`
+2. Use Playwright MCP tools in Claude Code session:
+   - `mcp__Claude_Playwright__browser_navigate` - Navigate to form
+   - `mcp__Claude_Playwright__browser_type` - Fill text fields
+   - `mcp__Claude_Playwright__browser_click` - Click buttons/radios/checkboxes
+   - `mcp__Claude_Playwright__browser_snapshot` - Verify page state
+   - `mcp__Claude_Playwright__browser_take_screenshot` - Capture evidence
+3. Test complete user flow from start to finish with realistic mock data
+4. Verify Next/Submit buttons become enabled when forms are valid
+5. Save test evidence:
+   - Screenshots → `.docs/screenshots/test-evidence/step{N}-{state}.png`
+   - Form data JSON → `.docs/screenshots/test-evidence/{form-name}-test-data.json`
+6. Reference evidence in PR description with links to screenshots and JSON
+
+### Consequences
+
+* **Pros**:
+  - Catches validation issues before PR review (saves reviewer time)
+  - Provides visual evidence that forms work end-to-end
+  - Scales with project growth (automated testing beats manual)
+  - Integrates directly into Claude Code workflow (no context switching)
+  - Creates artifact trail for QA and stakeholder review
+* **Cons / risks**:
+  - Adds ~5-10 minutes per PR for browser testing
+  - Requires Playwright MCP server to be configured
+  - Screenshots/JSON files increase repo size (mitigated by `.gitignore` if needed)
+* **Supersedes**: None (new requirement)
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**PR Checklist** (enforced in `.cursor/rules/rules.mdc` and `CLAUDE.md`):
+- [ ] Playwright MCP used to fill all form steps with mock data
+- [ ] Screenshots captured for each step → `.docs/screenshots/test-evidence/`
+- [ ] Test data JSON created → `.docs/screenshots/test-evidence/{form-name}-test-data.json`
+- [ ] PR description includes links to screenshots and JSON
+- [ ] All Next/Submit buttons confirmed to enable when valid
+
+**Evidence Format** (from `.docs/screenshots/test-evidence/{form-name}-test-data.json`):
+```json
+{
+  "test_session": {
+    "date": "2025-11-15T02:36:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "form": "IGP Commercialisation Application",
+    "status": "Completed Steps 1-7"
+  },
+  "step1_eligibility": { "entityType": "Company incorporated in Australia", ... },
+  "step2_organization": { "abn": "11111111111", ... },
+  "test_notes": {
+    "playwright_mcp_tools_used": ["browser_navigate", "browser_click", ...]
+  }
+}
+```
+
+**Validation**:
+- ✅ Test evidence files present in `.docs/screenshots/test-evidence/`
+- ✅ PR description references screenshot URLs and JSON file
+- ✅ JSON file contains complete test session metadata
+
+**Reference Pattern**: Based on [OneRedOak/claude-code-workflows design-review](https://github.com/OneRedOak/claude-code-workflows/tree/main/design-review) workflow pattern.
+
+---
+
+## ADR-1008 — Test Evidence Organization by Grant
+
+<a id="adr-1008"></a>
+**Date**: 2025-11-15
+**Status**: Accepted
+**Owner**: Grant-Harness Development Team
+
+### Context
+
+Current test evidence organization (`.docs/screenshots/test-evidence/`) dumps all screenshots and JSON files into a single flat directory. This creates problems:
+
+1. **No grant identification**: Cannot tell which grant a screenshot belongs to without opening files
+2. **No versioning**: Multiple test runs overwrite previous evidence, losing history
+3. **No discoverability**: Cannot quickly find "latest IGP test" or "all BBI tests"
+4. **Poor PR references**: PR descriptions must link to individual files, not test sessions
+5. **Scaling issues**: With 10-20 grants tested repeatedly, directory becomes unmanageable
+
+Example problem from Issue #2: Screenshots named `step1-completed.png`, `step2-filled.png` etc. with no indication they're for IGP grant, no timestamp, no test session context.
+
+### Alternatives
+
+**Option 1: Flat directory with naming convention** (current):
+```
+.docs/screenshots/test-evidence/
+├── igp-step1-completed.png
+├── igp-step2-filled.png
+├── igp-form-test-data.json
+├── bbi-step1-completed.png
+...
+```
+- Pros: Simple, no folders
+- Cons: Still hard to find specific test sessions, no versioning
+
+**Option 2: Grant-based folders with date-versioned sessions** (chosen):
+```
+.docs/screenshots/test-evidence/
+├── igp-commercialisation/
+│   ├── 2025-11-15-session-001/
+│   │   ├── metadata.json
+│   │   ├── step1-completed.png
+│   │   ├── step7-complete.png
+│   │   └── form-data.json
+│   └── 2025-11-16-session-002/
+│       └── ...
+├── bbi-initiative/
+│   └── 2025-11-17-session-001/
+│       └── ...
+└── README.md
+```
+- Pros: Clear organization, versioning, discoverable, scalable
+- Cons: Deeper folder structure
+
+**Option 3: Database-backed test evidence**:
+- Pros: Queryable, filterable
+- Cons: Overkill for prototype, evidence not in git
+
+### Decision
+
+Organize test evidence by **grant ID** with **date-versioned test sessions**:
+
+**Directory Structure**:
+```
+.docs/screenshots/test-evidence/
+├── {grant-id}/                     # e.g., igp-commercialisation
+│   ├── {YYYY-MM-DD}-session-{NNN}/ # e.g., 2025-11-15-session-001
+│   │   ├── metadata.json           # Test session info
+│   │   ├── step{N}-{state}.png     # Screenshots
+│   │   └── form-data.json          # Complete form data
+│   └── {YYYY-MM-DD}-session-{NNN}/ # Additional test runs
+│       └── ...
+├── {another-grant-id}/
+│   └── ...
+└── README.md                        # Explains structure and usage
+```
+
+**metadata.json** (required in every session):
+```json
+{
+  "test_session": {
+    "session_id": "2025-11-15-session-001",
+    "grant_id": "igp-commercialisation",
+    "grant_name": "Industry Growth Program - Commercialisation Stream",
+    "date": "2025-11-15T02:59:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "test_type": "End-to-end form population with browser automation",
+    "status": "ALL 7 STEPS COMPLETED - Submit button enabled",
+    "total_steps": 7,
+    "steps_completed": 7,
+    "playwright_mcp_tools_used": [
+      "browser_navigate", "browser_click", "browser_type",
+      "browser_snapshot", "browser_take_screenshot"
+    ],
+    "duration_minutes": 15,
+    "blocking_issues_encountered": ["LocalStorage hydration causing validation to not trigger"],
+    "workaround_applied": "Navigate directly between steps using page.goto()"
+  },
+  "evidence_files": {
+    "screenshots": [
+      "step1-completed.png",
+      "step2-filled.png",
+      "step3-filled.png",
+      "step4-empty.png",
+      "step5-empty.png",
+      "step6-empty.png",
+      "step7-complete.png",
+      "submit-confirmation.png"
+    ],
+    "form_data": "form-data.json",
+    "submission_data": "Outcome of clicking Submit button (localStorage/API response/alert)"
+  },
+  "mock_data_source": {
+    "company": "EMEW Technologies Pty Ltd",
+    "reference": "Based on EMEW corporate profile from .docs/context/emew-context/"
+  }
+}
+```
+
+**form-data.json** (complete form data for reproducibility):
+```json
+{
+  "step1_eligibility": { "entityType": "Company incorporated in Australia", ... },
+  "step2_organization": { "abn": "11111111111", ... },
+  ...
+  "step7_contact_declaration": { "primaryContact": { ... } }
+}
+```
+
+**README.md** (at root of test-evidence/):
+```markdown
+# Test Evidence Directory
+
+## Structure
+
+Each grant has its own folder named by grant ID (e.g., `igp-commercialisation`).
+Each test session is a date-versioned subfolder (e.g., `2025-11-15-session-001`).
+
+## Finding Test Evidence
+
+- **Latest IGP test**: Look in `igp-commercialisation/` for most recent date
+- **All BBI tests**: Browse `bbi-initiative/` folder
+- **Specific test session**: Navigate to `{grant-id}/{date}-session-{nnn}/`
+
+## Files in Each Session
+
+- `metadata.json` - Test session info (status, duration, tools used)
+- `step{N}-{state}.png` - Screenshots of each form step
+- `submit-confirmation.png` - Screenshot of submission outcome (MANDATORY)
+- `form-data.json` - Complete form data for reproducibility
+
+## PR References
+
+When creating PR, link to specific test session:
+```
+Test Evidence: `.docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/`
+- All 7 steps completed: [metadata.json](...)
+- Submit button enabled: [step7-complete.png](...)
+```
+```
+
+**Migration from current structure**:
+1. Move existing evidence to grant-specific folders:
+   ```bash
+   mkdir -p .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   mv .docs/screenshots/test-evidence/step*.png .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   mv .docs/screenshots/test-evidence/igp-form-test-data.json .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/form-data.json
+   # Create metadata.json from test data JSON
+   ```
+2. Delete old flat files
+3. Create README.md explaining structure
+
+### Consequences
+
+* **Pros**:
+  - **Discoverability**: Easy to find "all IGP tests" or "latest BBI test"
+  - **Versioning**: Test history preserved (compare session-001 vs session-002)
+  - **Scalability**: 20 grants × 5 test sessions = 100 sessions, still organized
+  - **PR references**: Link to entire session folder, not individual files
+  - **Reproducibility**: metadata.json + form-data.json = complete test context
+  - **Pattern reuse**: Same structure for all grants (consistency)
+
+* **Cons / risks**:
+  - Deeper folder nesting (3 levels) - acceptable for clarity
+  - Migration effort for existing evidence - one-time cost (~10 minutes)
+  - Requires discipline to follow naming convention - enforced in CLAUDE.md
+
+* **Supersedes**: Flat test evidence directory structure
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**Mandatory PR Checklist** (enforced in `.cursor/rules/rules.mdc` and `CLAUDE.md`):
+- [ ] Test evidence organized in `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/`
+- [ ] `metadata.json` present with test session info
+- [ ] `form-data.json` contains complete form data
+- [ ] All screenshots follow naming pattern `step{N}-{state}.png`
+- [ ] **`submit-confirmation.png` present showing submission outcome (MANDATORY)**
+- [ ] **Submit button clicked and data outcome documented in metadata.json (MANDATORY)**
+- [ ] PR description links to specific test session folder
+
+**Validation Script** (future enhancement):
+```bash
+# Verify test evidence structure
+python scripts/verify-test-evidence.py .docs/screenshots/test-evidence/
+# Checks:
+# - Each grant folder has at least one session
+# - Each session has metadata.json + form-data.json
+# - Screenshot files referenced in metadata.json exist
+```
+
+**AI Agent Guidance**:
+
+**CRITICAL**: Always organize test evidence by grant ID and test session date.
+
+**Test Evidence Workflow**:
+1. Before starting Playwright MCP test, determine session ID:
+   ```
+   grant_id = "igp-commercialisation"  # From grant being tested
+   date = "2025-11-15"                 # Today's date
+   session_num = check_existing_sessions(grant_id, date) + 1  # Increment
+   session_id = f"{date}-session-{session_num:03d}"  # e.g., "2025-11-15-session-001"
+   evidence_dir = f".docs/screenshots/test-evidence/{grant_id}/{session_id}/"
+   ```
+
+2. Create evidence directory:
+   ```bash
+   mkdir -p .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   cd .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   ```
+
+3. Run Playwright MCP test, filling ALL form steps with mock data
+
+4. **CLICK SUBMIT BUTTON** - Use `browser_click` to click the Submit Application button
+
+5. **CAPTURE SUBMISSION OUTCOME** - Use `browser_take_screenshot` to save `submit-confirmation.png` showing alert/confirmation/response
+
+6. **DOCUMENT DATA OUTCOME** - Record what happened in metadata.json (localStorage save, API response, alert message, etc.)
+
+7. Create `metadata.json` with test session info (template above)
+
+8. Create `form-data.json` with complete form data
+
+6. Update PR description with link to test session folder:
+   ```markdown
+   ## Test Evidence
+
+   Complete 7-step test session: `.docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/`
+
+   - **Status**: ✅ ALL 7 STEPS COMPLETED
+   - **Submit button**: ENABLED (see [step7-complete.png](...))
+   - **Test duration**: 15 minutes
+   - **Mock data**: EMEW Technologies Pty Ltd
+
+   Files:
+   - [metadata.json](...) - Test session details
+   - [form-data.json](...) - Complete form data
+   - [step7-complete.png](...) - Final state with Submit enabled
+   ```
+
+**Never** save test evidence to flat directory. **Always** use grant-specific folders with date-versioned sessions.
 
 ---

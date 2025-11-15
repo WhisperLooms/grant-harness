@@ -230,6 +230,20 @@ tool = Tool(
 - Pass criteria: >80% tool trajectory score
 - End-to-end tests with deployed agent
 
+**Frontend Testing** (MANDATORY before PR):
+- **Playwright MCP Browser Testing**: Use `mcp__Claude_Playwright__*` tools to test forms
+  - Navigate with `browser_navigate`, fill with `browser_type`, click with `browser_click`
+  - Verify Next/Submit buttons enable when form is valid
+  - Capture screenshots with `browser_take_screenshot` → `.docs/screenshots/test-evidence/`
+  - Save test data JSON → `.docs/screenshots/test-evidence/{form-name}-test-data.json`
+- **E2E Tests**: Playwright tests in `tests/e2e/` covering complete user flows
+- **Unit Tests**: Vitest/Jest for components, hooks, utilities
+- **PR Evidence Required**:
+  - Link to screenshots in PR description
+  - Reference to test data JSON file
+  - Confirmation that all form steps were tested with mock data
+- **See**: `.cursor/rules/frontend/testing-workflow.mdc` for complete requirements
+
 ### ADR Management
 
 **Prototype ADRs** (Document tactical decisions):
