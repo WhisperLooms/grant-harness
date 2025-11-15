@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -52,6 +53,14 @@ export default function Step3BusinessPage() {
       womenOwnershipStatus: undefined,
     },
   });
+
+  // Trigger validation after localStorage hydration (Issue #12 fix)
+  useEffect(() => {
+    // Only trigger if we have saved data from localStorage
+    if (formData.step3_business && Object.keys(formData.step3_business).length > 0) {
+      form.trigger(); // Re-run all validation rules
+    }
+  }, []); // Run once on mount
 
   const businessDescription = form.watch("businessDescription");
   const hasHoldingCompany = form.watch("hasHoldingCompany");

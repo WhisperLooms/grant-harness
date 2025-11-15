@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -37,6 +38,14 @@ export default function Step6AssessmentPage() {
       criterion4Response: "",
     },
   });
+
+  // Trigger validation after localStorage hydration (Issue #12 fix)
+  useEffect(() => {
+    // Only trigger if we have saved data from localStorage
+    if (formData.step6_assessment && Object.keys(formData.step6_assessment).length > 0) {
+      form.trigger(); // Re-run all validation rules
+    }
+  }, []); // Run once on mount
 
   const criterion1Response = form.watch("criterion1Response");
   const criterion2Response = form.watch("criterion2Response");

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -56,6 +57,14 @@ export default function Step2OrganizationPage() {
       indigenousOwnership: undefined,
     },
   });
+
+  // Trigger validation after localStorage hydration (Issue #12 fix)
+  useEffect(() => {
+    // Only trigger if we have saved data from localStorage
+    if (formData.step2_organization && Object.keys(formData.step2_organization).length > 0) {
+      form.trigger(); // Re-run all validation rules
+    }
+  }, []); // Run once on mount
 
   const postalSameAsBusiness = form.watch("postalAddressSameAsBusiness");
   const existedCompleteFinancialYear = form.watch("existedCompleteFinancialYear");

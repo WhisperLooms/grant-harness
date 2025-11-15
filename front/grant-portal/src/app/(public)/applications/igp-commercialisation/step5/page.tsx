@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,14 @@ export default function Step5BudgetPage() {
       otherGovernmentFunding: 0,
     },
   });
+
+  // Trigger validation after localStorage hydration (Issue #12 fix)
+  useEffect(() => {
+    // Only trigger if we have saved data from localStorage
+    if (formData.step5_budget && Object.keys(formData.step5_budget).length > 0) {
+      form.trigger(); // Re-run all validation rules
+    }
+  }, []); // Run once on mount
 
   // Watch all cost fields for the summary
   const labourCosts = form.watch("labourCosts") || 0;
