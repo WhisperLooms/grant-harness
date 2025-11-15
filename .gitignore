@@ -118,3 +118,4 @@ Thumbs.db
 
 # Windows command redirection artifacts
 nul
+.playwright-mcp/
