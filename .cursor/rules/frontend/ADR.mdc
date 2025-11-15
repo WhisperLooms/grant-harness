@@ -982,9 +982,11 @@ Organize test evidence by **grant ID** with **date-versioned test sessions**:
       "step4-empty.png",
       "step5-empty.png",
       "step6-empty.png",
-      "step7-complete.png"
+      "step7-complete.png",
+      "submit-confirmation.png"
     ],
-    "form_data": "form-data.json"
+    "form_data": "form-data.json",
+    "submission_data": "Outcome of clicking Submit button (localStorage/API response/alert)"
   },
   "mock_data_source": {
     "company": "EMEW Technologies Pty Ltd",
@@ -1022,6 +1024,7 @@ Each test session is a date-versioned subfolder (e.g., `2025-11-15-session-001`)
 
 - `metadata.json` - Test session info (status, duration, tools used)
 - `step{N}-{state}.png` - Screenshots of each form step
+- `submit-confirmation.png` - Screenshot of submission outcome (MANDATORY)
 - `form-data.json` - Complete form data for reproducibility
 
 ## PR References
@@ -1070,6 +1073,8 @@ Test Evidence: `.docs/screenshots/test-evidence/igp-commercialisation/2025-11-15
 - [ ] `metadata.json` present with test session info
 - [ ] `form-data.json` contains complete form data
 - [ ] All screenshots follow naming pattern `step{N}-{state}.png`
+- [ ] **`submit-confirmation.png` present showing submission outcome (MANDATORY)**
+- [ ] **Submit button clicked and data outcome documented in metadata.json (MANDATORY)**
 - [ ] PR description links to specific test session folder
 
 **Validation Script** (future enhancement):
@@ -1102,11 +1107,17 @@ python scripts/verify-test-evidence.py .docs/screenshots/test-evidence/
    cd .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
    ```
 
-3. Run Playwright MCP test, saving screenshots to evidence directory
+3. Run Playwright MCP test, filling ALL form steps with mock data
 
-4. Create `metadata.json` with test session info (template above)
+4. **CLICK SUBMIT BUTTON** - Use `browser_click` to click the Submit Application button
 
-5. Create `form-data.json` with complete form data
+5. **CAPTURE SUBMISSION OUTCOME** - Use `browser_take_screenshot` to save `submit-confirmation.png` showing alert/confirmation/response
+
+6. **DOCUMENT DATA OUTCOME** - Record what happened in metadata.json (localStorage save, API response, alert message, etc.)
+
+7. Create `metadata.json` with test session info (template above)
+
+8. Create `form-data.json` with complete form data
 
 6. Update PR description with link to test session folder:
    ```markdown

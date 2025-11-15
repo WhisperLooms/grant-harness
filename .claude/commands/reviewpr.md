@@ -4,7 +4,7 @@ Critically review the GitHub Pull Request: **$ARGUMENTS**.
 
 **Scope:** Analyze the PR diff for backend Python changes (ADK agents, prototypes, utilities). Provide a concise summary, highlight any issues or improvements following best practices, and conclude with a recommendation to merge or request changes.
 
-**Repository Context**: EMEW Agents - Multi-agent system for electrowinning technology documentation (Knowledge Agent RAG) and marketing automation (Marketing Agent prototype/ADK).
+**Repository Context**: Grant-Harness allows users to provide a small amount of input (eg: website and project summary) that enabling the AI (1) to pre-populate the grant forms for user review and collaboration (protytpe phase 1) and (2) match the user with suitable open Government grants (MVP). 
 
 ## Usage
 
@@ -254,6 +254,10 @@ Proceed with the Review Process below using the metadata and diff. If `gh` is un
 - Branch is up-to-date with `master` (main branch for EMEW Agents)
 - No large binary files committed
 - Commit messages reference GitHub Issue when applicable (e.g., "feat(marketing): implement prospect-scan (Issue #1)")
+
+### 6. Test Evidence
+- Backend: Unit tests must be provided for back end
+- Frontend: MUST include evidence that entire form has been completed end to end by providing screen shot of each page being populated AND providing reference to the data stored for final report. You MUST view the screen shots and report - if this data is NOT consistent with the original Grant Guide or Proforma Applicaiton form, then this MUST be flagged for attention.  It is vital that these forms are able to be completed by Playwright MCP with evidence BEFORE forms are merged. 
 
 ## Performance & Quality Targets
 

@@ -192,10 +192,13 @@ echo "back/grant-prototype/.inputs/" >> .gitignore
    - `mcp__Claude_Playwright__browser_take_screenshot` - Capture evidence
 3. **Test complete user flow**: Fill ALL steps from start to finish with mock data
 4. **Verify Next/Submit buttons**: Confirm buttons become enabled after valid input
-5. **Save test evidence**:
-   - Screenshots: `.docs/screenshots/test-evidence/step{N}-{state}.png`
-   - Form data JSON: `.docs/screenshots/test-evidence/{form-name}-test-data.json`
-6. **Reference in PR**: Link to screenshots and test data JSON in PR description
+5. **CLICK SUBMIT BUTTON AND CAPTURE DATA OUTCOME**: Click the final Submit button and document what happens (alert message, localStorage save, API response, etc.)
+6. **Save test evidence**:
+   - Screenshots: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/step{N}-{state}.png`
+   - Submission screenshot: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/submit-confirmation.png`
+   - Form data JSON: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/form-data.json`
+   - Metadata JSON: `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/metadata.json`
+7. **Reference in PR**: Link to test session folder with all evidence in PR description
 
 **Evidence Format**:
 ```json
