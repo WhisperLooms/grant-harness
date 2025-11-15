@@ -64,6 +64,7 @@ END ADR_AGENT_PROTOCOL
 
 | ID   | Title                                                      | Date       | Status   | Supersedes | Superseded by |
 | ---- | ---------------------------------------------------------- | ---------- | -------- | ---------- | ------------- |
+| 1008 | [Test Evidence Organization by Grant](#adr-1008)          | 2025-11-15 | Accepted | —          | —             |
 | 1007 | [Playwright MCP Browser Testing Before PR](#adr-1007)     | 2025-11-15 | Accepted | —          | —             |
 | 1006 | [URL Structure for Multi-Grant Multi-Client Scale](#adr-1006) | 2025-11-13 | Accepted | —          | —             |
 | 1005 | [PDF Export Strategy](#adr-1005)                          | 2025-11-12 | Accepted | —          | —             |
@@ -73,6 +74,8 @@ END ADR_AGENT_PROTOCOL
 | 1001 | [React Hook Form + Shadcn UI Foundation](#adr-1001)       | 2025-11-12 | Accepted | —          | —             |
 
 <!-- END:ADR_INDEX -->
+
+<!-- REMEMBER: When adding new ADR, also update Index table above! -->
 
 ---
 
@@ -872,5 +875,256 @@ As the project scales with multiple complex forms (Steps 1-7 for IGP, future gra
 - ✅ JSON file contains complete test session metadata
 
 **Reference Pattern**: Based on [OneRedOak/claude-code-workflows design-review](https://github.com/OneRedOak/claude-code-workflows/tree/main/design-review) workflow pattern.
+
+---
+
+## ADR-1008 — Test Evidence Organization by Grant
+
+<a id="adr-1008"></a>
+**Date**: 2025-11-15
+**Status**: Accepted
+**Owner**: Grant-Harness Development Team
+
+### Context
+
+Current test evidence organization (`.docs/screenshots/test-evidence/`) dumps all screenshots and JSON files into a single flat directory. This creates problems:
+
+1. **No grant identification**: Cannot tell which grant a screenshot belongs to without opening files
+2. **No versioning**: Multiple test runs overwrite previous evidence, losing history
+3. **No discoverability**: Cannot quickly find "latest IGP test" or "all BBI tests"
+4. **Poor PR references**: PR descriptions must link to individual files, not test sessions
+5. **Scaling issues**: With 10-20 grants tested repeatedly, directory becomes unmanageable
+
+Example problem from Issue #2: Screenshots named `step1-completed.png`, `step2-filled.png` etc. with no indication they're for IGP grant, no timestamp, no test session context.
+
+### Alternatives
+
+**Option 1: Flat directory with naming convention** (current):
+```
+.docs/screenshots/test-evidence/
+├── igp-step1-completed.png
+├── igp-step2-filled.png
+├── igp-form-test-data.json
+├── bbi-step1-completed.png
+...
+```
+- Pros: Simple, no folders
+- Cons: Still hard to find specific test sessions, no versioning
+
+**Option 2: Grant-based folders with date-versioned sessions** (chosen):
+```
+.docs/screenshots/test-evidence/
+├── igp-commercialisation/
+│   ├── 2025-11-15-session-001/
+│   │   ├── metadata.json
+│   │   ├── step1-completed.png
+│   │   ├── step7-complete.png
+│   │   └── form-data.json
+│   └── 2025-11-16-session-002/
+│       └── ...
+├── bbi-initiative/
+│   └── 2025-11-17-session-001/
+│       └── ...
+└── README.md
+```
+- Pros: Clear organization, versioning, discoverable, scalable
+- Cons: Deeper folder structure
+
+**Option 3: Database-backed test evidence**:
+- Pros: Queryable, filterable
+- Cons: Overkill for prototype, evidence not in git
+
+### Decision
+
+Organize test evidence by **grant ID** with **date-versioned test sessions**:
+
+**Directory Structure**:
+```
+.docs/screenshots/test-evidence/
+├── {grant-id}/                     # e.g., igp-commercialisation
+│   ├── {YYYY-MM-DD}-session-{NNN}/ # e.g., 2025-11-15-session-001
+│   │   ├── metadata.json           # Test session info
+│   │   ├── step{N}-{state}.png     # Screenshots
+│   │   └── form-data.json          # Complete form data
+│   └── {YYYY-MM-DD}-session-{NNN}/ # Additional test runs
+│       └── ...
+├── {another-grant-id}/
+│   └── ...
+└── README.md                        # Explains structure and usage
+```
+
+**metadata.json** (required in every session):
+```json
+{
+  "test_session": {
+    "session_id": "2025-11-15-session-001",
+    "grant_id": "igp-commercialisation",
+    "grant_name": "Industry Growth Program - Commercialisation Stream",
+    "date": "2025-11-15T02:59:00Z",
+    "tester": "Claude Code with Playwright MCP",
+    "test_type": "End-to-end form population with browser automation",
+    "status": "ALL 7 STEPS COMPLETED - Submit button enabled",
+    "total_steps": 7,
+    "steps_completed": 7,
+    "playwright_mcp_tools_used": [
+      "browser_navigate", "browser_click", "browser_type",
+      "browser_snapshot", "browser_take_screenshot"
+    ],
+    "duration_minutes": 15,
+    "blocking_issues_encountered": ["LocalStorage hydration causing validation to not trigger"],
+    "workaround_applied": "Navigate directly between steps using page.goto()"
+  },
+  "evidence_files": {
+    "screenshots": [
+      "step1-completed.png",
+      "step2-filled.png",
+      "step3-filled.png",
+      "step4-empty.png",
+      "step5-empty.png",
+      "step6-empty.png",
+      "step7-complete.png"
+    ],
+    "form_data": "form-data.json"
+  },
+  "mock_data_source": {
+    "company": "EMEW Technologies Pty Ltd",
+    "reference": "Based on EMEW corporate profile from .docs/context/emew-context/"
+  }
+}
+```
+
+**form-data.json** (complete form data for reproducibility):
+```json
+{
+  "step1_eligibility": { "entityType": "Company incorporated in Australia", ... },
+  "step2_organization": { "abn": "11111111111", ... },
+  ...
+  "step7_contact_declaration": { "primaryContact": { ... } }
+}
+```
+
+**README.md** (at root of test-evidence/):
+```markdown
+# Test Evidence Directory
+
+## Structure
+
+Each grant has its own folder named by grant ID (e.g., `igp-commercialisation`).
+Each test session is a date-versioned subfolder (e.g., `2025-11-15-session-001`).
+
+## Finding Test Evidence
+
+- **Latest IGP test**: Look in `igp-commercialisation/` for most recent date
+- **All BBI tests**: Browse `bbi-initiative/` folder
+- **Specific test session**: Navigate to `{grant-id}/{date}-session-{nnn}/`
+
+## Files in Each Session
+
+- `metadata.json` - Test session info (status, duration, tools used)
+- `step{N}-{state}.png` - Screenshots of each form step
+- `form-data.json` - Complete form data for reproducibility
+
+## PR References
+
+When creating PR, link to specific test session:
+```
+Test Evidence: `.docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/`
+- All 7 steps completed: [metadata.json](...)
+- Submit button enabled: [step7-complete.png](...)
+```
+```
+
+**Migration from current structure**:
+1. Move existing evidence to grant-specific folders:
+   ```bash
+   mkdir -p .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   mv .docs/screenshots/test-evidence/step*.png .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   mv .docs/screenshots/test-evidence/igp-form-test-data.json .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/form-data.json
+   # Create metadata.json from test data JSON
+   ```
+2. Delete old flat files
+3. Create README.md explaining structure
+
+### Consequences
+
+* **Pros**:
+  - **Discoverability**: Easy to find "all IGP tests" or "latest BBI test"
+  - **Versioning**: Test history preserved (compare session-001 vs session-002)
+  - **Scalability**: 20 grants × 5 test sessions = 100 sessions, still organized
+  - **PR references**: Link to entire session folder, not individual files
+  - **Reproducibility**: metadata.json + form-data.json = complete test context
+  - **Pattern reuse**: Same structure for all grants (consistency)
+
+* **Cons / risks**:
+  - Deeper folder nesting (3 levels) - acceptable for clarity
+  - Migration effort for existing evidence - one-time cost (~10 minutes)
+  - Requires discipline to follow naming convention - enforced in CLAUDE.md
+
+* **Supersedes**: Flat test evidence directory structure
+* **Superseded by**: —
+
+### Compliance / Verification
+
+**Mandatory PR Checklist** (enforced in `.cursor/rules/rules.mdc` and `CLAUDE.md`):
+- [ ] Test evidence organized in `.docs/screenshots/test-evidence/{grant-id}/{YYYY-MM-DD}-session-{NNN}/`
+- [ ] `metadata.json` present with test session info
+- [ ] `form-data.json` contains complete form data
+- [ ] All screenshots follow naming pattern `step{N}-{state}.png`
+- [ ] PR description links to specific test session folder
+
+**Validation Script** (future enhancement):
+```bash
+# Verify test evidence structure
+python scripts/verify-test-evidence.py .docs/screenshots/test-evidence/
+# Checks:
+# - Each grant folder has at least one session
+# - Each session has metadata.json + form-data.json
+# - Screenshot files referenced in metadata.json exist
+```
+
+**AI Agent Guidance**:
+
+**CRITICAL**: Always organize test evidence by grant ID and test session date.
+
+**Test Evidence Workflow**:
+1. Before starting Playwright MCP test, determine session ID:
+   ```
+   grant_id = "igp-commercialisation"  # From grant being tested
+   date = "2025-11-15"                 # Today's date
+   session_num = check_existing_sessions(grant_id, date) + 1  # Increment
+   session_id = f"{date}-session-{session_num:03d}"  # e.g., "2025-11-15-session-001"
+   evidence_dir = f".docs/screenshots/test-evidence/{grant_id}/{session_id}/"
+   ```
+
+2. Create evidence directory:
+   ```bash
+   mkdir -p .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   cd .docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/
+   ```
+
+3. Run Playwright MCP test, saving screenshots to evidence directory
+
+4. Create `metadata.json` with test session info (template above)
+
+5. Create `form-data.json` with complete form data
+
+6. Update PR description with link to test session folder:
+   ```markdown
+   ## Test Evidence
+
+   Complete 7-step test session: `.docs/screenshots/test-evidence/igp-commercialisation/2025-11-15-session-001/`
+
+   - **Status**: ✅ ALL 7 STEPS COMPLETED
+   - **Submit button**: ENABLED (see [step7-complete.png](...))
+   - **Test duration**: 15 minutes
+   - **Mock data**: EMEW Technologies Pty Ltd
+
+   Files:
+   - [metadata.json](...) - Test session details
+   - [form-data.json](...) - Complete form data
+   - [step7-complete.png](...) - Final state with Submit enabled
+   ```
+
+**Never** save test evidence to flat directory. **Always** use grant-specific folders with date-versioned sessions.
 
 ---
