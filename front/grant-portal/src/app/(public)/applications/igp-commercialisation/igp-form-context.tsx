@@ -7,6 +7,7 @@ import { getFromLocalStorage, saveToLocalStorage, removeFromLocalStorage } from 
 interface IGPFormContextType {
   formData: Partial<IGPFormData>;
   currentStep: number;
+  isHydrated: boolean;
   updateStepData: (step: number, data: unknown) => void;
   setCurrentStep: (step: number) => void;
   clearFormData: () => void;
@@ -23,25 +24,39 @@ export default function IGPFormContextProvider({
 }: {
   children: ReactNode;
 }) {
-  const [formData, setFormData] = useState<Partial<IGPFormData>>(() => {
-    return getFromLocalStorage<Partial<IGPFormData>>(STORAGE_KEY) || {};
-  });
+  // Initialize with empty defaults (matches SSR render)
+  const [formData, setFormData] = useState<Partial<IGPFormData>>({});
+  const [currentStep, setCurrentStepState] = useState<number>(1);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const [currentStep, setCurrentStepState] = useState<number>(() => {
-    return getFromLocalStorage<number>(STEP_KEY) || 1;
-  });
-
-  // Auto-save to LocalStorage whenever formData changes
+  // Load from localStorage AFTER mount (client-only, fixes hydration)
   useEffect(() => {
-    if (Object.keys(formData).length > 0) {
+    const savedFormData = getFromLocalStorage<Partial<IGPFormData>>(STORAGE_KEY);
+    const savedStep = getFromLocalStorage<number>(STEP_KEY);
+
+    if (savedFormData) {
+      setFormData(savedFormData);
+    }
+    if (savedStep) {
+      setCurrentStepState(savedStep);
+    }
+
+    setIsHydrated(true);
+  }, []); // Run once on mount
+
+  // Auto-save to LocalStorage whenever formData changes (only after hydration)
+  useEffect(() => {
+    if (isHydrated && Object.keys(formData).length > 0) {
       saveToLocalStorage(STORAGE_KEY, formData);
     }
-  }, [formData]);
+  }, [formData, isHydrated]);
 
-  // Save current step
+  // Save current step (only after hydration)
   useEffect(() => {
-    saveToLocalStorage(STEP_KEY, currentStep);
-  }, [currentStep]);
+    if (isHydrated) {
+      saveToLocalStorage(STEP_KEY, currentStep);
+    }
+  }, [currentStep, isHydrated]);
 
   const updateStepData = (step: number, data: unknown) => {
     const stepKey = `step${step}_${getStepName(step)}` as keyof IGPFormData;
@@ -72,6 +87,7 @@ export default function IGPFormContextProvider({
       value={{
         formData,
         currentStep,
+        isHydrated,
         updateStepData,
         setCurrentStep,
         clearFormData,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -46,6 +47,11 @@ export default function Step4ProjectPage() {
       projectLocationSuburb: "",
     },
   });
+
+  // Trigger validation after form loads (Issue #12 fix)
+  useEffect(() => {
+    form.trigger();
+  }, [form]);
 
   const projectTitle = form.watch("projectTitle");
   const projectBriefDescription = form.watch("projectBriefDescription");

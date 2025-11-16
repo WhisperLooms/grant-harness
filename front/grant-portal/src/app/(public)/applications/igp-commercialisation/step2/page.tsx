@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -7,6 +8,7 @@ import {
   step2OrganizationSchema,
   Step2OrganizationData,
   IGP_STEPS,
+  IGPFormData,
 } from "@/lib/schemas/igp-commercialisation";
 import { useIGPFormContext } from "../igp-form-context";
 import {
@@ -28,8 +30,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Step2OrganizationPage() {
   const router = useRouter();
-  const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
+  const { formData, isHydrated, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
+  // Don't initialize form until after hydration completes (Issue #12 fix)
+  // This ensures defaultValues gets localStorage data instead of empty {}
+  if (!isHydrated) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <FormProgress
+          currentStep={2}
+          totalSteps={IGP_STEPS.length}
+          steps={IGP_STEPS.map((s) => ({ id: s.id, title: s.title }))}
+        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 2: Organization Details</CardTitle>
+            <CardDescription>Loading...</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  return <Step2Form formData={formData} updateStepData={updateStepData} setCurrentStep={setCurrentStep} saveProgress={saveProgress} router={router} />;
+}
+
+// Separate component to ensure hooks are only called after hydration
+function Step2Form({ formData, updateStepData, setCurrentStep, saveProgress, router }: {
+  formData: Partial<IGPFormData>;
+  updateStepData: (step: number, data: unknown) => void;
+  setCurrentStep: (step: number) => void;
+  saveProgress: () => void;
+  router: ReturnType<typeof useRouter>;
+}) {
   const form = useForm<Step2OrganizationData>({
     mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step2OrganizationSchema),
@@ -39,26 +72,31 @@ export default function Step2OrganizationPage() {
       tradingName: "",
       businessStreetAddress: "",
       businessSuburb: "",
-      businessState: undefined,
+      businessState: "" as any,
       businessPostcode: "",
       postalAddressSameAsBusiness: true,
-      postalStreetAddress: "",
-      postalSuburb: "",
+      postalStreetAddress: undefined,
+      postalSuburb: undefined,
       postalState: undefined,
-      postalPostcode: "",
+      postalPostcode: undefined,
       mostRecentYearTurnover: 0,
       mostRecentYearTotalAssets: 0,
-      existedCompleteFinancialYear: undefined,
+      existedCompleteFinancialYear: "" as any,
       previousYearTurnover: 0,
       previousYearTotalAssets: 0,
       numberOfEmployees: 0,
       numberOfContractors: 0,
-      indigenousOwnership: undefined,
+      indigenousOwnership: "" as any,
     },
   });
 
   const postalSameAsBusiness = form.watch("postalAddressSameAsBusiness");
   const existedCompleteFinancialYear = form.watch("existedCompleteFinancialYear");
+
+  // Trigger validation after form loads with localStorage data (Issue #12 fix)
+  useEffect(() => {
+    form.trigger();
+  }, [form]);
 
   const onSubmit = (data: Step2OrganizationData) => {
     updateStepData(2, data);
@@ -93,7 +131,10 @@ export default function Step2OrganizationPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               {/* ABN */}
               <FormField
                 control={form.control}
@@ -182,7 +223,10 @@ export default function Step2OrganizationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>State</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select state" />
@@ -283,7 +327,10 @@ export default function Step2OrganizationPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>State</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select state" />
@@ -506,7 +553,10 @@ export default function Step2OrganizationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Is your organization Indigenous-owned?</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Indigenous ownership status" />

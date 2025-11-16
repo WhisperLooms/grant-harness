@@ -49,40 +49,57 @@ The complete grant application journey follows: **g → c → m → a → p → 
 graph TD
     Start([Start: EMEW Case Study]) --> Week1
 
-    subgraph Week1["WEEK 1: Grant & Company Ingestion<br/>(Issue #1 - Simplified)"]
-        w1d1["Day 1-2: Migrate EMEW Docs<br/>.docs/context → .inputs/<br/>Upload to Gemini Company Corpus"]
-        w1d3["Day 3-4: Parse Grant Summary<br/>Download 8-10 Grant PDFs<br/>Upload to Gemini Grant Corpus"]
-        w1d5["Day 5: Match EMEW to Grants<br/>Select 2 Target Grants<br/>(e.g., IGP + BBI)"]
+    subgraph CLOSED["✅ COMPLETED ISSUES"]
+        subgraph Week1["WEEK 1: Grant & Company Ingestion<br/>(Issue #1)"]
+            w1d1["Day 1-2: Migrate EMEW Docs<br/>.docs/context → .inputs/<br/>Upload to Gemini Company Corpus"]
+            w1d3["Day 3-4: Parse Grant Summary<br/>Download 8-10 Grant PDFs<br/>Upload to Gemini Grant Corpus"]
+            w1d5["Day 5: Match EMEW to Grants<br/>Select 2 Target Grants<br/>(IGP + BBI)"]
 
-        w1d1 --> w1d3
-        w1d3 --> w1d5
+            w1d1 --> w1d3
+            w1d3 --> w1d5
+        end
+
+        subgraph Week2["WEEK 2: Application Form Replication<br/>(Issue #2)"]
+            w2d1["Day 8: Analyze IGP Form<br/>Extract structure → JSON schema"]
+            w2d2["Day 9-10: Build 7-Step Form<br/>React Hook Form + Shadcn UI<br/>Multi-step navigation"]
+            w2d3["Day 11-12: E2E Testing<br/>Playwright MCP browser testing<br/>Test evidence documentation"]
+
+            w2d1 --> w2d2
+            w2d2 --> w2d3
+        end
     end
 
     Week1 --> Week2
+    Week2 --> BugFix
 
-    subgraph Week2["WEEK 2: Application Form Replication<br/>(Issue #2 - Was Issue #4)"]
-        w2d1["Day 8: Analyze Grant #1 (IGP)<br/>Extract form structure → JSON schema"]
-        w2d2["Day 9-10: Generate NextJS Form<br/>DynamicForm component<br/>Multi-step navigation"]
-        w2d3["Day 11-12: Replicate Grant #2 (BBI)<br/>Test both forms<br/>Stakeholder review"]
-
-        w2d1 --> w2d2
-        w2d2 --> w2d3
+    subgraph IMMEDIATE["🔴 IMMEDIATE PRIORITY"]
+        BugFix["Issue #12: Fix LocalStorage Bug<br/>Next button disabled after reload<br/>Steps 2-6 validation hydration<br/>(~2 hours)"]
     end
 
-    Week2 --> Week3
+    BugFix --> Week3
 
-    subgraph Week3["WEEK 3: AI Population & Review<br/>(Issue #3 - Was Issue #5)"]
-        w3d1["Day 13: AI Population Engine<br/>Query Gemini Company Corpus<br/>Auto-fill 70% of fields"]
-        w3d2["Day 14: Field-Level AI Assist<br/>Inline regeneration<br/>Source citations"]
-        w3d3["Day 15-17: Review Workflow UI<br/>Flag fields for review<br/>Consultant approval tracking"]
+    subgraph Week3["WEEK 3: Dual-Format AI Population<br/>(Issues #3 + #10)"]
+        w3home["Home Page: Format Chooser<br/>Government Format (7-step)<br/>OR Streamlined Format (2-page)"]
 
-        w3d1 --> w3d2
-        w3d2 --> w3d3
+        subgraph Gov["Government Format (Issue #3)"]
+            w3gov1["AI populate 7-step form<br/>70%+ fields auto-filled<br/>Query Gemini Company Corpus"]
+            w3gov2["Per-field AI assistance<br/>Inline regeneration<br/>Source citations"]
+        end
+
+        subgraph Stream["Streamlined Format (Issue #10)"]
+            w3s1["Page 1: Onboarding Chat<br/>AI conversation → extract context<br/>High-level project details"]
+            w3s2["Page 2: Full Form View<br/>Per-field AI chat<br/>Document upload per field"]
+        end
+
+        w3home --> w3gov1
+        w3home --> w3s1
+        w3gov1 --> w3gov2
+        w3s1 --> w3s2
     end
 
     Week3 --> Week4
 
-    subgraph Week4["WEEK 4: Collaboration & Export<br/>(Issue #4 - Was Issue #6)"]
+    subgraph Week4["WEEK 4: Collaboration & Export<br/>(Issue #4)"]
         w4d1["Day 18: Supporting Documents<br/>Drag-drop attachments<br/>AI suggests placement"]
         w4d2["Day 19: Signoff Workflow<br/>Multi-stakeholder approval<br/>(Consultant → CFO → CEO)"]
         w4d3["Day 20: PDF Export<br/>Match government format<br/>Include appendices"]
@@ -98,29 +115,30 @@ graph TD
     Decision -->|No| Pivot([Pivot Strategy<br/>or End Project])
     Decision -->|Yes| Phase2
 
-    subgraph Phase2["PHASE 2: Production Scale<br/>(Weeks 5-8)"]
-        p2w5["Week 5: Production Backend<br/>ADK agents + PostgreSQL<br/>Automated scraping (50+ sources)"]
-        p2w6["Week 6: Multi-Company Dashboard<br/>Consultant managing 5-10 clients<br/>Application tracking"]
-        p2w7["Week 7: Advanced Collaboration<br/>Real-time sync (Supabase)<br/>Activity feed + comments"]
-        p2w8["Week 8: GCP Deployment<br/>CI/CD pipeline<br/>Monitoring + security"]
+    subgraph Phase2["PHASE 2: Production Scale<br/>(Weeks 5-8+)"]
+        p2i5["Issue #5: Multi-Company Profiling<br/>Company dashboard<br/>Multi-tenant architecture"]
+        p2i6["Issue #6: Production Scrapers<br/>Automated 50+ sources<br/>Change detection"]
+        p2i7["Issue #7: Multi-Tenancy Security<br/>Data segregation<br/>RLS + encryption"]
+        p2i8["Issue #8: Grant Discovery Tool<br/>Periodic scanning<br/>Client portfolio monitoring"]
 
-        p2w5 --> p2w6
-        p2w6 --> p2w7
-        p2w7 --> p2w8
+        p2i5 --> p2i6
+        p2i6 --> p2i7
+        p2i7 --> p2i8
     end
 
     Phase2 --> End([End: Production MVP<br/>5-10 companies using platform])
 
-    classDef week1 fill:#e1f5e1,stroke:#4caf50,stroke-width:2px
-    classDef week2 fill:#bbdefb,stroke:#2196f3,stroke-width:2px
+    classDef completed fill:#e8f5e9,stroke:#81c784,stroke-width:2px,color:#666
+    classDef immediate fill:#ffebee,stroke:#f44336,stroke-width:3px
     classDef week3 fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
     classDef week4 fill:#ffccbc,stroke:#ff9800,stroke-width:2px
     classDef phase2 fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
     classDef decision fill:#ffebee,stroke:#f44336,stroke-width:3px
 
-    class Week1 week1
-    class Week2 week2
-    class Week3 week3
+    class Week1,Week2 completed
+    class CLOSED completed
+    class BugFix,IMMEDIATE immediate
+    class Week3,Gov,Stream week3
     class Week4 week4
     class Phase2 phase2
     class Decision decision
@@ -132,15 +150,50 @@ graph TD
 
 **See `.docs/specs/github-issues-update-plan.md` for complete recalibration details and copy-paste ready issue descriptions.**
 
-### New Priority Order (Phase 1, Weeks 1-4)
-1. **Issue #1**: Grant & Company Ingestion (Week 1) - Simplified bootstrap with EMEW docs
-2. **Issue #2**: Application Form Replication (Week 2) - NextJS forms (was Issue #4)
-3. **Issue #3**: AI-Powered Population & Review (Week 3) - Auto-fill + review workflow (was Issue #5)
-4. **Issue #4**: Collaboration & Export (Week 4) - Signoff + PDF export (was Issue #6)
+### Recently Completed ✅
 
-### Deferred to Phase 2 (Weeks 5-8)
-5. **Issue #5**: Company Profiling - Full multi-company features (was Issue #2)
-6. **Issue #6**: Production Scrapers - Automated 50+ source scraping (was Issue #1 advanced features)
+| Issue | Title | Completed | PR | Deliverables |
+|-------|-------|-----------|-----|--------------|
+| **#1** | Grant & Company Ingestion (Week 1) | 2025-11-12 | [#9](https://github.com/WhisperLooms/grant-harness/pull/9) | Gemini dual-corpus, EMEW profile, Grant matching |
+| **#2** | Application Form Replication (Week 2) | 2025-11-15 | [#11](https://github.com/WhisperLooms/grant-harness/pull/11) | 7-step IGP form, React Hook Form, E2E testing |
+
+### Current Priority Order
+
+#### 🔴 IMMEDIATE (Before Week 3)
+**Issue #12**: [Fix LocalStorage Hydration Validation Bug](https://github.com/WhisperLooms/grant-harness/issues/12)
+- **Problem**: Next button disabled after page reload on Steps 2-6
+- **Impact**: Blocks stakeholder UAT (has workaround via direct URLs)
+- **Effort**: ~2 hours
+- **Solution**: Add `useEffect` to trigger `form.trigger()` after localStorage loads
+- **Priority**: Fix before Week 3 to ensure smooth demo flow
+
+#### 🟡 Week 3: Dual-Format AI Population
+**Issue #3**: [AI-Powered Population & Review - Government Format](https://github.com/WhisperLooms/grant-harness/issues/3)
+- Auto-fill 70%+ fields in 7-step form
+- Per-field AI assistance with source citations
+- Query Gemini Company Corpus for answers
+- Review workflow with confidence scoring
+
+**Issue #10**: [Streamlined Collaboration Format](https://github.com/WhisperLooms/grant-harness/issues/10)
+- Page 1: AI onboarding chat (extract project context)
+- Page 2: Full form with per-field AI chat
+- Document upload per field
+- Same data model as Government Format
+
+**Key Architecture**: Home page offers format choice → both formats read/write same form data
+
+#### 🟠 Week 4: Multi-Stakeholder Workflow
+**Issue #4**: [Collaboration & PDF Export](https://github.com/WhisperLooms/grant-harness/issues/4)
+- Supporting document attachments
+- Multi-stakeholder signoff (Consultant → CFO → CEO)
+- PDF export matching government format
+- End-to-end testing + stakeholder demo
+
+### Deferred to Phase 2 (Weeks 5-8+)
+**Issue #5**: Company Profiling - Multi-company dashboard, consultant managing 5-10 clients
+**Issue #6**: Production Scrapers - Automated 50+ sources with change detection
+**Issue #7**: Multi-Tenancy Security - Data segregation, RLS, encryption
+**Issue #8**: Grant Discovery Tool - Periodic scanning for client portfolio (8-week scope)
 
 **Decision Point**: Week 4 demo must show <2 hour application completion vs 10+ hours manual to proceed to Phase 2.
 
@@ -309,8 +362,9 @@ Commands:
 
 ---
 
-**Last Updated**: 2025-11-12
-**Current Phase**: Phase 0 Complete - Ready for Week 1 (Grant & Company Ingestion)
-**Next Milestone**: Week 1 - EMEW Bootstrap & Grant Matching (Issue #1)
+**Last Updated**: 2025-11-15
+**Current Phase**: Week 2 Complete → Issue #12 Bug Fix → Week 3 Dual-Format AI Population
+**Immediate Next**: Issue #12 (LocalStorage bug fix - ~2 hours)
+**Week 3 Next**: Issues #3 + #10 (Dual-format AI population - Government + Streamlined)
 **Strategic Priority**: Application Assistance > Grant Discovery (ADR-0003)
 **Week 4 Success Metric**: Demo <2 hour application completion vs 10+ hours manual

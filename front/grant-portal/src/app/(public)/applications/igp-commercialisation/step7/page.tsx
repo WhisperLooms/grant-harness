@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -48,6 +49,11 @@ export default function Step7ContactPage() {
       authorizedOfficerName: "",
     },
   });
+
+  // Trigger validation after form loads (Issue #12 fix)
+  useEffect(() => {
+    form.trigger();
+  }, [form]);
 
   const hasConflictOfInterest = form.watch("hasConflictOfInterest");
 

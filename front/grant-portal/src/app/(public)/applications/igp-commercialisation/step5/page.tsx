@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,11 @@ export default function Step5BudgetPage() {
       otherGovernmentFunding: 0,
     },
   });
+
+  // Trigger validation after form loads (Issue #12 fix)
+  useEffect(() => {
+    form.trigger();
+  }, [form]);
 
   // Watch all cost fields for the summary
   const labourCosts = form.watch("labourCosts") || 0;

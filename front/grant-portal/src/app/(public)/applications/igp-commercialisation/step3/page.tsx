@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -38,8 +39,8 @@ export default function Step3BusinessPage() {
       companyWebsite: "",
       companyVideo: "",
       hasHoldingCompany: undefined,
-      holdingCompanyName: "",
-      holdingCompanyAbn: "",
+      holdingCompanyName: undefined,
+      holdingCompanyAbn: undefined,
       year1Revenue: 0,
       year1GrossProfit: 0,
       year1NetProfit: 0,
@@ -52,6 +53,11 @@ export default function Step3BusinessPage() {
       womenOwnershipStatus: undefined,
     },
   });
+
+  // Trigger validation after form loads (Issue #12 fix)
+  useEffect(() => {
+    form.trigger();
+  }, [form]);
 
   const businessDescription = form.watch("businessDescription");
   const hasHoldingCompany = form.watch("hasHoldingCompany");
