@@ -29,7 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Step2OrganizationPage() {
   const router = useRouter();
-  const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
+  const { formData, isHydrated, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
   const form = useForm<Step2OrganizationData>({
     mode: "onChange", // Enable real-time validation for Next button
@@ -40,31 +40,38 @@ export default function Step2OrganizationPage() {
       tradingName: "",
       businessStreetAddress: "",
       businessSuburb: "",
-      businessState: undefined,
+      businessState: "" as any, // Empty string keeps Select controlled
       businessPostcode: "",
       postalAddressSameAsBusiness: true,
       postalStreetAddress: "",
       postalSuburb: "",
-      postalState: undefined,
+      postalState: "" as any, // Empty string keeps Select controlled
       postalPostcode: "",
       mostRecentYearTurnover: 0,
       mostRecentYearTotalAssets: 0,
-      existedCompleteFinancialYear: undefined,
+      existedCompleteFinancialYear: "" as any, // Empty string keeps RadioGroup controlled
       previousYearTurnover: 0,
       previousYearTotalAssets: 0,
       numberOfEmployees: 0,
       numberOfContractors: 0,
-      indigenousOwnership: undefined,
+      indigenousOwnership: "" as any, // Empty string keeps Select controlled
     },
   });
 
-  // Trigger validation after localStorage hydration (Issue #12 fix)
+  // Load localStorage data after hydration (Issue #12 fix)
   useEffect(() => {
-    // Only trigger if we have saved data from localStorage
-    if (formData.step2_organization && Object.keys(formData.step2_organization).length > 0) {
-      form.trigger(); // Re-run all validation rules
+    if (isHydrated && formData.step2_organization) {
+      // Reset form with localStorage data
+      form.reset(formData.step2_organization);
+      // Trigger validation multiple times to ensure it completes
+      // First immediately, then with delays to handle async rendering
+      form.trigger();
+      setTimeout(() => form.trigger(), 50);
+      setTimeout(() => form.trigger(), 200);
     }
-  }, []); // Run once on mount
+    // form is stable from useForm, no need to include in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated]); // Run once after hydration
 
   const postalSameAsBusiness = form.watch("postalAddressSameAsBusiness");
   const existedCompleteFinancialYear = form.watch("existedCompleteFinancialYear");
@@ -102,7 +109,11 @@ export default function Step2OrganizationPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              key={isHydrated ? 'hydrated' : 'loading'}
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               {/* ABN */}
               <FormField
                 control={form.control}
@@ -191,7 +202,11 @@ export default function Step2OrganizationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>State</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          key={`state-${field.value}`}
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select state" />
@@ -292,7 +307,11 @@ export default function Step2OrganizationPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>State</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select
+                              key={`postal-state-${field.value}`}
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select state" />
@@ -515,7 +534,11 @@ export default function Step2OrganizationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Is your organization Indigenous-owned?</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        key={`indigenous-${field.value}`}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Indigenous ownership status" />
