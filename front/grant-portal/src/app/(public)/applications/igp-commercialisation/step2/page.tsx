@@ -29,39 +29,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Step2OrganizationPage() {
   const router = useRouter();
-  const { formData, isHydrated, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
+  const { formData, updateStepData, setCurrentStep, saveProgress } = useIGPFormContext();
 
-  // Don't initialize form until after hydration completes (Issue #12 fix)
-  // This ensures Select components get correct values from localStorage
-  if (!isHydrated) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <FormProgress
-          currentStep={2}
-          totalSteps={IGP_STEPS.length}
-          steps={IGP_STEPS.map((s) => ({ id: s.id, title: s.title }))}
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 2: Organization Details</CardTitle>
-            <CardDescription>Loading...</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  return <Step2Form formData={formData} updateStepData={updateStepData} setCurrentStep={setCurrentStep} saveProgress={saveProgress} router={router} />;
-}
-
-// Separate component to ensure hooks are only called after hydration
-function Step2Form({ formData, updateStepData, setCurrentStep, saveProgress, router }: {
-  formData: Partial<IGPFormData>;
-  updateStepData: (step: number, data: unknown) => void;
-  setCurrentStep: (step: number) => void;
-  saveProgress: () => void;
-  router: ReturnType<typeof useRouter>;
-}) {
   const form = useForm<Step2OrganizationData>({
     mode: "onChange", // Enable real-time validation for Next button
     resolver: zodResolver(step2OrganizationSchema),
@@ -71,7 +40,7 @@ function Step2Form({ formData, updateStepData, setCurrentStep, saveProgress, rou
       tradingName: "",
       businessStreetAddress: "",
       businessSuburb: "",
-      businessState: "" as any, // Empty string keeps Select controlled
+      businessState: "" as any,
       businessPostcode: "",
       postalAddressSameAsBusiness: true,
       postalStreetAddress: undefined,
@@ -80,22 +49,22 @@ function Step2Form({ formData, updateStepData, setCurrentStep, saveProgress, rou
       postalPostcode: undefined,
       mostRecentYearTurnover: 0,
       mostRecentYearTotalAssets: 0,
-      existedCompleteFinancialYear: "" as any, // Empty string keeps RadioGroup controlled
+      existedCompleteFinancialYear: "" as any,
       previousYearTurnover: 0,
       previousYearTotalAssets: 0,
       numberOfEmployees: 0,
       numberOfContractors: 0,
-      indigenousOwnership: "" as any, // Empty string keeps Select controlled
+      indigenousOwnership: "" as any,
     },
   });
 
-  const postalSameAsBusiness = form.watch("postalAddressSameAsBusiness");
-  const existedCompleteFinancialYear = form.watch("existedCompleteFinancialYear");
-
-  // Trigger validation after form loads with localStorage data
+  // Trigger validation after form loads (Issue #12 fix)
   useEffect(() => {
     form.trigger();
   }, [form]);
+
+  const postalSameAsBusiness = form.watch("postalAddressSameAsBusiness");
+  const existedCompleteFinancialYear = form.watch("existedCompleteFinancialYear");
 
   const onSubmit = (data: Step2OrganizationData) => {
     updateStepData(2, data);

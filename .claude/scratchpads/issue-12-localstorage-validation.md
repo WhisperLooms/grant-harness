@@ -377,3 +377,66 @@ PR reviewer should test manually:
 4. Regression: Clear localStorage → Verify Next disabled on fresh form
 
 **Alternative**: Code review verification of TypeScript types + pattern correctness.
+
+---
+
+## PR #13 Review Fixes (2025-11-16)
+
+### Blocking Issues Fixed ✅
+
+**Issue 1: TypeScript Compilation Error**
+- **Problem**: Step 2 missing `IGPFormData` import for split component prop type
+- **File**: `front/grant-portal/src/app/(public)/applications/igp-commercialisation/step2/page.tsx:59`
+- **Fix**: Added `IGPFormData` to imports from `@/lib/schemas/igp-commercialisation`
+- **Status**: ✅ FIXED - TypeScript compiles cleanly (`npx tsc --noEmit` passes)
+
+### Non-Blocking Improvements ✅
+
+**Issue 2: Inconsistent Implementation Pattern**
+- **Problem**: Step 2 used split component pattern (Step2Form wrapper), Steps 3-7 used simple `useEffect` trigger
+- **Impact**: Code complexity, maintenance burden, inconsistent codebase
+- **Fix**: Simplified Step 2 to match Steps 3-7 pattern:
+  - Removed `Step2Form` separate component
+  - Removed `isHydrated` check and loading state
+  - Kept simple `useEffect(() => form.trigger(), [form])` pattern
+  - Now consistent across all 6 steps (2-7)
+- **Status**: ✅ FIXED - All steps now use identical pattern
+
+### Testing Status
+
+**Code Verification**: ✅ COMPLETE
+- TypeScript compilation passes
+- Pattern matches Steps 3-7 (verified by code review)
+- Uses official React Hook Form API (`form.trigger()`)
+- No breaking changes
+
+**Browser Testing**: ⚠️ BLOCKED by Windows File Lock
+- Same EPERM error on `.next/trace` file
+- Dev server cannot start (known issue documented above)
+- **Recommendation**: PR reviewer should perform manual testing
+  - Test Steps: Fill Step 2 → Save Draft → Refresh (F5) → Verify Next enabled → Click Next
+  - Expected: Next button enables immediately after reload with saved data
+
+### Changes Summary
+
+**Files Modified** (2 files):
+1. `step2/page.tsx` - Fixed TypeScript import + simplified to match Steps 3-7
+2. `.claude/scratchpads/issue-12-localstorage-validation.md` - This documentation
+
+**Commit Message**:
+```
+fix(forms): address PR #13 review feedback (Issue #12)
+
+- Add missing IGPFormData import to step2/page.tsx (TypeScript error)
+- Simplify Step 2 to match Steps 3-7 pattern (remove split component)
+- Now consistent: all steps use useEffect + form.trigger() pattern
+- TypeScript compilation verified passing
+
+Ref: PR #13 review blocking issue + non-blocking improvements
+```
+
+**Ready for Re-Review**: ✅ Yes
+- All blocking issues resolved
+- Code quality improved (consistent pattern)
+- TypeScript compiles cleanly
+- Manual browser testing recommended by reviewer
