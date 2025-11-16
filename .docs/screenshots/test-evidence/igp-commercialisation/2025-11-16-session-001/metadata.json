@@ -1,0 +1,54 @@
+{
+  "test_session": {
+    "date": "2025-11-16T00:00:00Z",
+    "session_id": "2025-11-16-session-001",
+    "tester": "Claude Code with Chrome DevTools MCP",
+    "form": "IGP Commercialisation Application - Step 2",
+    "issue": "Issue #12 - Next button disabled after localStorage reload",
+    "status": "FIXED"
+  },
+  "issue_details": {
+    "root_cause": [
+      "Optional postal fields initialized with empty strings instead of undefined",
+      "Zod schema expects undefined OR valid value for .optional() fields",
+      "Empty string failed regex validation (/^\\d{4}$/)",
+      "Form validation not triggered after localStorage load"
+    ],
+    "solution": [
+      "Split component to delay form initialization until after hydration",
+      "Changed postal field defaults from empty strings to undefined",
+      "Added useEffect to trigger validation after form loads",
+      "Reverted Select components to controlled state with value prop"
+    ]
+  },
+  "test_results": {
+    "localStorage_data_loads": "PASS",
+    "select_dropdowns_display_values": "PASS",
+    "form_validates_correctly": "PASS",
+    "next_button_enables": "PASS",
+    "navigation_to_step3": "PASS"
+  },
+  "debugging_tools": {
+    "mcp": "chrome-devtools",
+    "tools_used": [
+      "navigate_page",
+      "wait_for",
+      "take_snapshot",
+      "take_screenshot",
+      "evaluate_script"
+    ]
+  },
+  "test_data": {
+    "abn": "11111111111",
+    "legalEntityName": "EMEW Technologies Pty Ltd",
+    "tradingName": "EMEW",
+    "businessState": "NSW",
+    "indigenousOwnership": "no",
+    "mostRecentYearTurnover": 5000000,
+    "numberOfEmployees": 30
+  },
+  "evidence_files": [
+    "step2-next-enabled.png",
+    "step3-success.png"
+  ]
+}

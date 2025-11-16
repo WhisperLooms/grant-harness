@@ -39,13 +39,10 @@ export default function Step6AssessmentPage() {
     },
   });
 
-  // Trigger validation after localStorage hydration (Issue #12 fix)
+  // Trigger validation after form loads (Issue #12 fix)
   useEffect(() => {
-    // Only trigger if we have saved data from localStorage
-    if (formData.step6_assessment && Object.keys(formData.step6_assessment).length > 0) {
-      form.trigger(); // Re-run all validation rules
-    }
-  }, []); // Run once on mount
+    form.trigger();
+  }, [form]);
 
   const criterion1Response = form.watch("criterion1Response");
   const criterion2Response = form.watch("criterion2Response");

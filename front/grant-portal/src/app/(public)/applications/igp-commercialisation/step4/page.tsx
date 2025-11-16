@@ -48,13 +48,10 @@ export default function Step4ProjectPage() {
     },
   });
 
-  // Trigger validation after localStorage hydration (Issue #12 fix)
+  // Trigger validation after form loads (Issue #12 fix)
   useEffect(() => {
-    // Only trigger if we have saved data from localStorage
-    if (formData.step4_project && Object.keys(formData.step4_project).length > 0) {
-      form.trigger(); // Re-run all validation rules
-    }
-  }, []); // Run once on mount
+    form.trigger();
+  }, [form]);
 
   const projectTitle = form.watch("projectTitle");
   const projectBriefDescription = form.watch("projectBriefDescription");

@@ -39,8 +39,8 @@ export default function Step3BusinessPage() {
       companyWebsite: "",
       companyVideo: "",
       hasHoldingCompany: undefined,
-      holdingCompanyName: "",
-      holdingCompanyAbn: "",
+      holdingCompanyName: undefined,
+      holdingCompanyAbn: undefined,
       year1Revenue: 0,
       year1GrossProfit: 0,
       year1NetProfit: 0,
@@ -54,13 +54,10 @@ export default function Step3BusinessPage() {
     },
   });
 
-  // Trigger validation after localStorage hydration (Issue #12 fix)
+  // Trigger validation after form loads (Issue #12 fix)
   useEffect(() => {
-    // Only trigger if we have saved data from localStorage
-    if (formData.step3_business && Object.keys(formData.step3_business).length > 0) {
-      form.trigger(); // Re-run all validation rules
-    }
-  }, []); // Run once on mount
+    form.trigger();
+  }, [form]);
 
   const businessDescription = form.watch("businessDescription");
   const hasHoldingCompany = form.watch("hasHoldingCompany");
